@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { MobileMenu } from '@/components/ui/mobile-menu'
 
 export function Sidebar() {
   const menuItems = [
@@ -8,26 +9,32 @@ export function Sidebar() {
   ]
 
   return (
-    <aside className="w-64 bg-gray-100 dark:bg-gray-900 p-6 border-r border-gray-200 dark:border-gray-800">
-      <div className="mb-8">
-        <h2 className="text-xl font-bold">Pauerv</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400">App Dashboard</p>
-      </div>
+    <>
+      {/* Mobile Menu */}
+      <MobileMenu menuItems={menuItems} />
 
-      <nav>
-        <ul className="space-y-2">
-          {menuItems.map((item) => (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                className="block px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
-              >
-                {item.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </aside>
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:block w-64 bg-gray-100 dark:bg-gray-900 p-6 border-r border-gray-200 dark:border-gray-800">
+        <div className="mb-8">
+          <h2 className="text-xl font-bold">Pauerv</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">App Dashboard</p>
+        </div>
+
+        <nav>
+          <ul className="space-y-2">
+            {menuItems.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className="block px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </aside>
+    </>
   )
 }
