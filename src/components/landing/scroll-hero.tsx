@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import Image from 'next/image'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { imagePlaceholders } from '@/lib/image-placeholders'
 
 // Register ScrollTrigger plugin
 if (typeof window !== 'undefined') {
@@ -12,24 +14,74 @@ if (typeof window !== 'undefined') {
 export function ScrollHero() {
   const sectionRef = useRef<HTMLDivElement>(null)
   const pinWrapperRef = useRef<HTMLDivElement>(null)
-  const productRef = useRef<HTMLDivElement>(null)
-  const headlineRef = useRef<HTMLHeadingElement>(null)
-  const descriptionRef = useRef<HTMLParagraphElement>(null)
+
+  // Initial text refs (SOFTWARE FOR YOU)
+  const text1Row1Ref = useRef<HTMLDivElement>(null)
+  const text1Row2Ref = useRef<HTMLDivElement>(null)
+  const text1Row3Ref = useRef<HTMLDivElement>(null)
+
+  // Image refs
+  const imageTopRef = useRef<HTMLDivElement>(null)
+  const imageBottomRef = useRef<HTMLDivElement>(null)
+
+  // Final text refs (WE BUILD FOR YOU)
+  const text2Row1Ref = useRef<HTMLDivElement>(null)
+  const text2Row2Ref = useRef<HTMLDivElement>(null)
+  const text2Row3Ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     // Ensure we're on the client side
     if (typeof window === 'undefined') return
 
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
     const section = sectionRef.current
     const pinWrapper = pinWrapperRef.current
-    const product = productRef.current
-    const headline = headlineRef.current
-    const description = descriptionRef.current
 
-    if (!section || !pinWrapper || !product || !headline || !description) return
+    const text1Row1 = text1Row1Ref.current
+    const text1Row2 = text1Row2Ref.current
+    const text1Row3 = text1Row3Ref.current
 
-    // Create a GSAP timeline for coordinated animations
-    const tl = gsap.timeline({
+    const imageTop = imageTopRef.current
+    const imageBottom = imageBottomRef.current
+
+    const text2Row1 = text2Row1Ref.current
+    const text2Row2 = text2Row2Ref.current
+    const text2Row3 = text2Row3Ref.current
+
+    if (!section || !pinWrapper || !text1Row1 || !text1Row2 || !text1Row3 ||
+        !imageTop || !imageBottom || !text2Row1 || !text2Row2 || !text2Row3) return
+
+    // If user prefers reduced motion, show elements immediately without animation
+    if (prefersReducedMotion) {
+      gsap.set([text1Row1, text1Row2, text1Row3, imageTop, imageBottom], { opacity: 1, scale: 1, y: 0 })
+      return
+    }
+
+    // Initial timeline for entrance animations (before scroll)
+    const introTl = gsap.timeline()
+
+    // Step 1: Show "SOFTWARE FOR YOU" text rows with stagger
+    introTl.to([text1Row1, text1Row2, text1Row3], {
+      opacity: 1,
+      y: 0,
+      duration: 1,
+      stagger: 0.2,
+      ease: 'power2.out'
+    })
+
+    // Step 2: After 2 seconds, show the two images
+    .to([imageTop, imageBottom], {
+      opacity: 1,
+      scale: 1,
+      duration: 0.8,
+      stagger: 0.15,
+      ease: 'back.out(0.4)'
+    }, '+=1') // Wait 2 seconds after previous animation
+
+    // Scroll-triggered timeline
+    const scrollTl = gsap.timeline({
       scrollTrigger: {
         trigger: section,              // Element that triggers the animation
         start: 'top top',              // Animation starts when top of trigger hits top of viewport
@@ -41,34 +93,76 @@ export function ScrollHero() {
       }
     })
 
-    // Animation 1: Move product image to the left and scale down
-    tl.to(product, {
-      x: -300,                         // Move 300px to the left
-      scale: 0.65,                     // Scale down to 65% of original size
-      duration: 1,                     // Relative duration in the timeline
-      ease: 'power2.inOut'             // Smooth easing function
+    // Scroll Animation 1: Move images to center
+    scrollTl.to(imageTop, {
+      left: '35%',                     // Move to center horizontally
+      top: '35%',                      // Position above center
+      x: '-50%',                       // Center adjustment
+      y: '-50%',                       // Center adjustment
+      duration: 1,
+      ease: 'power2.inOut'
     })
+    .to(imageBottom, {
+      left: '65%',                     // Move to center horizontally
+      bottom: '35%',                   // Position below center
+      x: '-50%',                       // Center adjustment
+      y: '50%',                        // Center adjustment
+      duration: 1,
+      ease: 'power2.inOut'
+    }, '<')                            // Start at same time as previous
 
-    // Animation 2: Slide in the headline from the right
-    .to(headline, {
-      opacity: 1,                      // Fade in
-      x: 0,                            // Move to original position
-      duration: 0.8,                   // Slightly faster than previous animation
-      ease: 'power2.out'
-    }, '-=0.3')                        // Start 0.3 seconds before previous animation ends (overlap)
+    // Hide "SOFTWARE FOR YOU" text (scale down and fade slowly)
+    .to([text1Row1, text1Row2, text1Row3], {
+      scale: 0.5,
+      opacity: 0,
+      duration: 1.0,
+      ease: 'power1.inOut'
+    }, '<0.3')
 
-    // Animation 3: Fade in the description text
-    .to(description, {
-      opacity: 1,                      // Fade in
-      y: 0,                            // Move to original position
-      duration: 0.6,
+    // Show "WE BUILD FOR YOU" text from alternating sides
+    // Row 1: from left
+    .to(text2Row1, {
+      opacity: 1,
+      x: 0,
+      duration: 0.8,
       ease: 'power2.out'
-    }, '-=0.2')                        // Start 0.2 seconds before previous animation ends
+    }, '-=0.3')
+
+    // Row 2: from right
+    .to(text2Row2, {
+      opacity: 1,
+      x: 0,
+      duration: 0.8,
+      ease: 'power2.out'
+    }, '-=0.5')
+
+    // Row 3: from left
+    .to(text2Row3, {
+      opacity: 1,
+      x: 0,
+      duration: 0.8,
+      ease: 'power2.out'
+    }, '-=0.5')
+
+    // Debounced resize handler for better performance
+    let resizeTimer: NodeJS.Timeout
+
+    const handleResize = () => {
+      clearTimeout(resizeTimer)
+      resizeTimer = setTimeout(() => {
+        ScrollTrigger.refresh()
+      }, 250)
+    }
+
+    window.addEventListener('resize', handleResize)
 
     // Cleanup function
     return () => {
-      tl.kill()
+      introTl.kill()
+      scrollTl.kill()
       ScrollTrigger.getAll().forEach(trigger => trigger.kill())
+      window.removeEventListener('resize', handleResize)
+      clearTimeout(resizeTimer)
     }
   }, [])
 
@@ -83,58 +177,99 @@ export function ScrollHero() {
         ref={pinWrapperRef}
         className="h-screen flex items-center justify-center relative overflow-hidden"
       >
-        {/* Product Image Container */}
-        <div className="absolute inset-0 flex items-center justify-center">
+        {/* Initial Text: SOFTWARE FOR YOU */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 md:gap-8">
           <div
-            ref={productRef}
-            className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 rounded-3xl flex items-center justify-center text-3xl sm:text-4xl md:text-5xl font-bold shadow-2xl relative overflow-hidden"
-            style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              boxShadow: '0 20px 60px rgba(102, 126, 234, 0.4)'
-            }}
+            ref={text1Row1Ref}
+            className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold text-white opacity-0"
+            style={{ transform: 'translateY(50px)' }}
           >
-            {/* Product placeholder - you can replace this with an actual image */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-white drop-shadow-lg">PRODUCT</span>
-            </div>
-
-            {/* Optional: Animated gradient overlay */}
-            <div
-              className="absolute inset-0 opacity-30"
-              style={{
-                background: 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.3) 0%, transparent 70%)'
-              }}
-            />
+            SOFTWARE
+          </div>
+          <div
+            ref={text1Row2Ref}
+            className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold text-white opacity-0"
+            style={{ transform: 'translateY(50px)' }}
+          >
+            FOR
+          </div>
+          <div
+            ref={text1Row3Ref}
+            className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold text-white opacity-0"
+            style={{ transform: 'translateY(50px)' }}
+          >
+            YOU
           </div>
         </div>
 
-        {/* Text Content Container */}
-        <div className="absolute right-[5%] lg:right-[10%] w-[90%] sm:w-[80%] md:w-[50%] lg:w-[45%] max-w-2xl">
-          <h2
-            ref={headlineRef}
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 md:mb-8 leading-tight text-white"
-            style={{
-              opacity: 0,
-              transform: 'translateX(50px)'
-            }}
-          >
-            Revolutionary
-            <br />
-            Design
-          </h2>
+        {/* Images */}
+        {/* Top Left Image */}
+        <div
+          ref={imageTopRef}
+          className="absolute top-[-8%] left-[10%] w-64 sm:w-80 md:w-96 opacity-0"
+          style={{
+            scale: 0.8
+          }}
+        >
+          <Image
+            src="/images/top-image.png"
+            alt="Software development showcase - top image"
+            width={384}
+            height={384}
+            className="w-full h-auto object-contain drop-shadow-2xl"
+            priority
+            quality={90}
+            sizes="(max-width: 640px) 256px, (max-width: 768px) 320px, 384px"
+            placeholder="blur"
+            blurDataURL={imagePlaceholders.gradient}
+          />
+        </div>
 
-          <p
-            ref={descriptionRef}
-            className="text-base sm:text-lg md:text-xl leading-relaxed text-gray-300"
-            style={{
-              opacity: 0,
-              transform: 'translateY(20px)'
-            }}
+        {/* Bottom Right Image */}
+        <div
+          ref={imageBottomRef}
+          className="absolute bottom-[-5%] right-[10%] w-32 sm:w-40 md:w-80 opacity-0"
+          style={{
+            scale: 0.8
+          }}
+        >
+          <Image
+            src="/images/bottom-image.png"
+            alt="Mobile application showcase - bottom image"
+            width={320}
+            height={320}
+            className="w-full h-auto object-contain drop-shadow-2xl"
+            priority
+            quality={90}
+            sizes="(max-width: 640px) 128px, (max-width: 768px) 160px, 320px"
+            placeholder="blur"
+            blurDataURL={imagePlaceholders.pink}
+          />
+        </div>
+
+        {/* Final Text: WE BUILD FOR YOU */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 md:gap-6">
+          <div
+            ref={text2Row1Ref}
+            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white opacity-0"
+            style={{ transform: 'translateX(-200px)' }}
           >
-            Experience the future of technology with our innovative approach.
-            Built with precision and crafted for perfection, this product
-            transforms the way you interact with the digital world.
-          </p>
+            WE
+          </div>
+          <div
+            ref={text2Row2Ref}
+            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white opacity-0"
+            style={{ transform: 'translateX(200px)' }}
+          >
+            BUILD
+          </div>
+          <div
+            ref={text2Row3Ref}
+            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white opacity-0"
+            style={{ transform: 'translateX(-200px)' }}
+          >
+            FOR YOU
+          </div>
         </div>
       </div>
     </div>

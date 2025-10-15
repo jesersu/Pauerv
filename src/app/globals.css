@@ -20,40 +20,54 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Mobile-first base styles */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+@layer base {
+  /* Mobile-first base styles with Tailwind layers */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-html {
-  /* Base font size for mobile */
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Responsive font scaling */
-@media (min-width: 640px) {
   html {
-    font-size: 17px;
+    /* Base font size for mobile */
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Responsive font scaling */
+  @media (min-width: 640px) {
+    html {
+      font-size: 17px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    html {
+      font-size: 18px;
+    }
   }
 }
 
-@media (min-width: 1024px) {
-  html {
-    font-size: 18px;
-  }
-}
-
-/* Ensure touch targets are at least 44x44px on mobile */
-button, a {
+/* Ensure touch targets are at least 44x44px on mobile for interactive elements */
+button,
+a[role="button"],
+.btn,
+[type="button"],
+[type="submit"],
+[type="reset"] {
   min-height: 44px;
   min-width: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Allow normal inline links to flow naturally */
+a:not([role="button"]):not(.btn) {
+  min-height: auto;
+  min-width: auto;
+  display: inline;
 }
 
 @layer utilities {
