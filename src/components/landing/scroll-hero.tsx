@@ -5,6 +5,7 @@ import Image from 'next/image'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { imagePlaceholders } from '@/lib/image-placeholders'
+import { TechCarousel } from './tech-carousel'
 
 // Register ScrollTrigger plugin
 if (typeof window !== 'undefined') {
@@ -175,8 +176,10 @@ export function ScrollHero() {
       {/* Container that will be pinned */}
       <div
         ref={pinWrapperRef}
-        className="h-screen flex items-center justify-center relative overflow-hidden"
+        className="h-screen flex flex-col relative overflow-hidden"
       >
+        {/* Main content area */}
+        <div className="flex-1 flex items-center justify-center relative overflow-hidden">
         {/* Initial Text: SOFTWARE FOR YOU */}
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 md:gap-8">
           <div
@@ -270,6 +273,12 @@ export function ScrollHero() {
           >
             FOR YOU
           </div>
+        </div>
+        </div>
+
+        {/* Tech Stack Carousel at the bottom */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <TechCarousel />
         </div>
       </div>
     </div>

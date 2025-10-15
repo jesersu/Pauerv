@@ -1,17 +1,32 @@
+import { ProjectsSlider } from './projects-slider'
+import { ServicesSection } from './services-section'
+
 export function PlaceholderSections() {
   return (
     <>
-      {/* Section after scroll animation */}
-      <section className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-600 to-red-600 flex items-center justify-center px-4">
-        <div className="max-w-4xl text-center">
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6">
-            Continue Exploring
-          </h2>
-          <p className="text-lg sm:text-xl md:text-2xl text-white/90">
-            Scroll down to discover more amazing features
-          </p>
+      {/* Projects Section */}
+      <section
+        id="projects"
+        className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-600 to-red-600 flex flex-col items-center justify-center px-4 py-16"
+      >
+        <div className="max-w-7xl w-full">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4">
+              Our Projects
+            </h2>
+            <p className="text-lg sm:text-xl md:text-2xl text-white/90 max-w-2xl mx-auto">
+              Discover our portfolio of innovative solutions
+            </p>
+          </div>
+
+          <ProjectsSlider />
         </div>
       </section>
+
+      {/* Services Section */}
+      <div id="services">
+        <ServicesSection />
+      </div>
 
       {/* Additional content section */}
       <section className="min-h-screen bg-gray-900 flex items-center justify-center px-4">

@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isProjectsSection, setIsProjectsSection] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
 
   const menuItems = [
     { href: '#projects', label: 'Projects' },
@@ -13,8 +15,44 @@ export function Navigation() {
     { href: '#contact', label: 'Contact us' },
   ]
 
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault()
+    const element = document.querySelector(href)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      setIsMenuOpen(false)
+    }
+  }
+
+  // Detect when user scrolls to projects section and track scroll position
+  useEffect(() => {
+    const handleScroll = () => {
+      // Check scroll position
+      setIsScrolled(window.scrollY > 50)
+
+      const projectsSection = document.querySelector('#projects')
+      if (projectsSection) {
+        const rect = projectsSection.getBoundingClientRect()
+        // Check if projects section is in viewport
+        const isInView = rect.top <= 100 && rect.bottom >= 100
+        setIsProjectsSection(isInView)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    handleScroll() // Check initial state
+
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-transparent border-b border-white/5">
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 border-b transition-all duration-500 ${
+        isProjectsSection
+          ? 'bg-gradient-to-r from-purple-600/95 via-pink-600/95 to-red-600/95 backdrop-blur-md border-white/20'
+          : 'bg-transparent border-white/5'
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
@@ -32,6 +70,7 @@ export function Navigation() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={(e) => handleNavClick(e, item.href)}
                 className="text-gray-300 hover:text-white font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black rounded px-2 py-1"
                 aria-label={`Navigate to ${item.label}`}
               >
@@ -78,7 +117,7 @@ export function Navigation() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={(e) => handleNavClick(e, item.href)}
                   className="text-gray-300 hover:text-white font-medium py-2 px-4 rounded-lg hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white"
                   role="listitem"
                   aria-label={`Navigate to ${item.label}`}
