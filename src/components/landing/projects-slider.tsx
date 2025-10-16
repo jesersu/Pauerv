@@ -1,257 +1,361 @@
-'use client'
+"use client";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
-import { getProjects, type Project } from '@/services/projectsService'
+// ProjectsSlider component
+// - Shows 3 cards: left, center (emphasized), right
+// - Smooth slide using CSS transform: translateX() with 0.5s transition
+// - Click left/right arrows to navigate
+// - Continuous-feel: after transition ends, indices reset without visible jump
+// - Responsive: cards scale to container; center card slightly larger with shadow
+// - Images come from an array of URLs via props
+// - Includes an optional inline demo at the bottom (exported Demo component)
 
-export function ProjectsSlider() {
-  const [projects, setProjects] = useState<Project[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isTransitioning, setIsTransitioning] = useState(false)
-  const [direction, setDirection] = useState<'left' | 'right' | null>(null)
+export type ProjectsSliderProps = {
+  images?: string[];
+  className?: string;
+  // Duration of the slide transition in ms (default 500)
+  durationMs?: number;
+  // Scale applied to the center card (default 1.05)
+  centerScale?: number;
+  // Scale for immediate neighbors (default 0.9)
+  neighborScale?: number;
+  // Scale for far side cards (default 0.8)
+  outerScale?: number;
+  // Shadow strength for center card (default true)
+  centerShadow?: boolean;
+  // Optional: disable keyboard navigation
+  disableKeyboard?: boolean;
+  // Optional: explicit viewport height (px). If provided, overrides media rules.
+  viewportHeight?: number;
+  // Optional: CSS height value for viewport (e.g., '100vh', '80vh'). Takes precedence over viewportHeight.
+  viewportHeightCss?: string;
+  // Horizontal spacing between neighbor cards in pixels (default 24)
+  spacingPx?: number;
+  // Responsive height clamp value (e.g., 'clamp(280px, 50vw, 640px)') used when viewportHeight is not provided
+  heightClamp?: string;
+  // Portion of viewport height used for card size (0-1), default 0.8
+  cardHeightRatio?: number;
+};
 
-  // Fetch projects on mount
+// Utility: modulo that handles negatives
+function mod(n: number, m: number) {
+  return ((n % m) + m) % m;
+}
+
+// Responsive button size calculation
+const getButtonSize = () => {
+  if (typeof window === 'undefined') return 40;
+  return window.innerWidth < 640 ? 36 : 40;
+};
+
+const BUTTON_SIZE = 40;
+
+export const ProjectsSlider: React.FC<ProjectsSliderProps> = ({
+  images = [],
+  className,
+  durationMs = 500,
+  centerScale = 1.05,
+  neighborScale = 0.9,
+  outerScale = 0.8,
+  centerShadow = true,
+  disableKeyboard = false,
+  viewportHeight,
+  viewportHeightCss,
+  spacingPx = 24,
+  heightClamp,
+  cardHeightRatio = 0.8,
+}) => {
+  const n = images.length;
+  const [index, setIndex] = useState(0); // index of the center card
+  const [shift, setShift] = useState(0); // -100, 0, or 100 during animation
+  const [withTransition, setWithTransition] = useState(false);
+  const isAnimatingRef = useRef(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  console.log("num of images received: ");
+  console.log(images.length);
+  // Ensure there are at least 3 images to render the layout nicely
+  const canSlide = n >= 2; // allow slide even with 2 images (mirrors nicely)
+
+  // Precompute the five neighboring indices for smooth wrapping
+  const indices = useMemo(() => {
+    if (n === 0) return [] as number[];
+    // Order: left2(-200), left(-100), center(0), right(100), right2(200)
+    return [mod(index - 2, n), mod(index - 1, n), mod(index, n), mod(index + 1, n), mod(index + 2, n)];
+  }, [index, n]);
+
+  // Handlers
+  const goRight = useCallback(() => {
+    if (!canSlide || isAnimatingRef.current) return;
+    isAnimatingRef.current = true;
+    setWithTransition(true);
+    setShift(-100); // move all left by one card width
+  }, [canSlide]);
+
+  const goLeft = useCallback(() => {
+    if (!canSlide || isAnimatingRef.current) return;
+    isAnimatingRef.current = true;
+    setWithTransition(true);
+    setShift(100); // move all right by one card width
+  }, [canSlide]);
+
+  const onTransitionEnd = useCallback(() => {
+    if (!isAnimatingRef.current) return;
+    // After slide completes, update center index and reset without transition
+    setWithTransition(false);
+    setShift(0);
+    setIndex((prev) => (shift === -100 ? mod(prev + 1, n) : mod(prev - 1, n)));
+    // Allow next interactions on next tick to avoid mid-frame races
+    requestAnimationFrame(() => {
+      isAnimatingRef.current = false;
+    });
+  }, [n, shift]);
+
+  // Keyboard support when container is focused
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        setIsLoading(true)
-        const data = await getProjects()
-        setProjects(data)
-      } catch (error) {
-        console.error('Failed to fetch projects:', error)
-      } finally {
-        setIsLoading(false)
+    if (disableKeyboard) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        goRight();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        goLeft();
       }
-    }
+    };
+    el.addEventListener('keydown', onKeyDown);
+    return () => el.removeEventListener('keydown', onKeyDown);
+  }, [goLeft, goRight, disableKeyboard]);
 
-    fetchProjects()
-  }, [])
-
-  const nextSlide = () => {
-    if (isTransitioning) return
-    setIsTransitioning(true)
-    setDirection('left')
-    setCurrentIndex((prev) => (prev + 1) % projects.length)
-    setTimeout(() => {
-      setIsTransitioning(false)
-      setDirection(null)
-    }, 600)
-  }
-
-  const prevSlide = () => {
-    if (isTransitioning) return
-    setIsTransitioning(true)
-    setDirection('right')
-    setCurrentIndex((prev) => (prev - 1 + projects.length) % projects.length)
-    setTimeout(() => {
-      setIsTransitioning(false)
-      setDirection(null)
-    }, 600)
-  }
-
-  const getSlideIndex = (offset: number) => {
-    return (currentIndex + offset + projects.length) % projects.length
-  }
-
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') prevSlide()
-      if (e.key === 'ArrowRight') nextSlide()
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [currentIndex, isTransitioning])
-
-  // Show loading state
-  if (isLoading || projects.length === 0) {
+  if (n === 0) {
     return (
-      <div className="relative w-full h-[600px] md:h-[700px] flex items-center justify-center overflow-hidden">
-        <div className="text-white text-xl">Loading projects...</div>
+      <div className={className} style={{ padding: 16, textAlign: 'center' }}>
+        No images provided
       </div>
-    )
+    );
   }
+
+  // Card base positions in percentage of card width
+  // We place five cards to guarantee continuity during animation
+  const basePositions = [-200, -100, 0, 100, 200];
+
+  // Styles
+  const TRANSITION = `transform ${durationMs}ms ease`;
+
+  // Derive a target card height from the viewport height if provided (no hooks needed)
+  const derivedCardHeight = viewportHeight ? Math.round(viewportHeight * cardHeightRatio) : undefined;
+  // If CSS height provided, compute height via CSS calc
+  const derivedCardHeightCss = viewportHeightCss ? `calc(var(--ps-height) * ${cardHeightRatio})` : undefined;
+
+  const containerStyles: React.CSSProperties = {
+    position: 'relative',
+    width: '100%',
+    // Height can be adapted; we use a responsive height via aspect-ish ratio
+    // We'll set a min-height for small screens
+    minHeight: 320,
+    outline: 'none',
+  };
+
+  const defaultClamp = 'clamp(260px, 50vw, 640px)';
+  const heightVar = viewportHeightCss || (viewportHeight ? `${viewportHeight}px` : (heightClamp || defaultClamp));
+
+  const viewportStyles: React.CSSProperties = {
+    position: 'relative',
+    overflow: 'hidden',
+    width: '100%',
+    height: 'var(--ps-height)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '8px 0',
+    ['--ps-height' as any]: heightVar,
+  };
+
+  // A wrapper that we slide in one go by changing `shift`
+  const stageStyles: React.CSSProperties = {
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+  };
+
+  const cardCommon: React.CSSProperties = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)', // will be overridden per-card with translateX
+    // Prefer height-driven sizing when viewportHeight is provided; otherwise responsive width
+    height: derivedCardHeight ?? derivedCardHeightCss ?? undefined,
+    width: (derivedCardHeight || derivedCardHeightCss) ? 'auto' : 'clamp(240px, 80vw, 56rem)',
+    maxWidth: '95%',
+    aspectRatio: '4 / 3',
+    borderRadius: 16,
+    overflow: 'hidden',
+    background: '#111',
+    boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
+  } as React.CSSProperties;
+
+  const imgStyles: React.CSSProperties = {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    display: 'block',
+    userSelect: 'none',
+    pointerEvents: 'none',
+  };
+
+  const arrowBase: React.CSSProperties = {
+    position: 'absolute',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    width: BUTTON_SIZE,
+    height: BUTTON_SIZE,
+    borderRadius: '9999px',
+    border: '1px solid rgba(255,255,255,0.25)',
+    background: 'rgba(0,0,0,0.35)',
+    color: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    zIndex: 5,
+    backdropFilter: 'blur(2px)',
+    WebkitBackdropFilter: 'blur(2px)',
+  } as React.CSSProperties;
+
+  const leftArrowStyles: React.CSSProperties = {
+    ...arrowBase,
+    left: '4px',
+  };
+  const rightArrowStyles: React.CSSProperties = {
+    ...arrowBase,
+    right: '4px',
+  };
+
+  const renderCard = (slotIndex: number, imgIndex: number) => {
+    const base = basePositions[slotIndex]; // -200, -100, 0, 100, 200
+
+    // Determine visual proximity to center based on current shift
+    const position = base + shift; // -200, -100, 0, 100, 200 (plus during transition)
+    let scale = outerScale;
+    if (Math.abs(position) < 50) {
+      scale = centerScale;
+    } else if (Math.abs(position) < 150) {
+      scale = neighborScale;
+    }
+    const isCenterish = Math.abs(position) < 50;
+    const shadow = isCenterish && centerShadow ? '0 12px 30px rgba(0,0,0,0.35)' : '0 4px 14px rgba(0,0,0,0.15)';
+    // Apply extra horizontal spacing based on the card's relative slot position
+    const spacingFactor = (base + shift) / 100; // -2, -1, 0, 1, 2 during animation
+    const extraPx = spacingFactor * spacingPx;
+    const transform = `translate(calc(-50% + ${(base + shift)}% + ${extraPx}px), -50%) scale(${scale})`;
+
+    const style: React.CSSProperties = {
+      ...cardCommon,
+      transform,
+      transition: withTransition ? TRANSITION : 'none',
+      boxShadow: shadow,
+    };
+
+    const src = images[imgIndex];
+
+    return (
+      <div key={`${slotIndex}-${imgIndex}`} style={style} onTransitionEnd={slotIndex === 2 ? onTransitionEnd : undefined}>
+        <img src={src} alt={`Slide ${imgIndex + 1}`} style={imgStyles} draggable={false} />
+      </div>
+    );
+  };
 
   return (
-    <div className="relative w-full h-[600px] md:h-[700px] flex items-center justify-center overflow-hidden">
-      {/* Navigation Arrows */}
+    <div
+      ref={containerRef}
+      className={className}
+      style={containerStyles}
+      tabIndex={0}
+      aria-roledescription="carousel"
+      aria-label="Projects slider"
+    >
+      {/* Inline helper styles for responsiveness of container height */}
+      <style>{`
+        /* Default responsive height if CSS var is not set by inline style */
+        [data-ps-viewport] { height: var(--ps-height, ${defaultClamp}); }
+
+        /* Responsive arrow button sizing */
+        @media (max-width: 639px) {
+          [data-ps-arrow] {
+            width: 36px;
+            height: 36px;
+          }
+          [data-ps-arrow] svg {
+            width: 18px;
+            height: 18px;
+          }
+        }
+
+        /* Hover emphasis on arrows */
+        @media (hover: hover) {
+          [data-ps-arrow]:hover { background: rgba(0,0,0,0.5); }
+        }
+        [data-ps-arrow]:active { transform: translateY(-50%) scale(0.96); }
+      `}</style>
+
       <button
-        onClick={prevSlide}
-        disabled={isTransitioning}
-        className="absolute left-4 md:left-8 z-20 w-12 h-12 md:w-14 md:h-14 bg-white/10 backdrop-blur-md hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group border border-white/20"
-        aria-label="Previous project"
+        type="button"
+        aria-label="Previous"
+        onClick={goLeft}
+        style={leftArrowStyles}
+        data-ps-arrow
       >
-        <svg
-          className="w-6 h-6 text-white group-hover:scale-110 transition-transform"
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path d="M15 19l-7-7 7-7" />
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
 
+      <div style={viewportStyles} data-ps-viewport>
+        <div style={stageStyles}>
+          {/* Render five positions for seamless slide */}
+          {renderCard(0, indices[0])}
+          {renderCard(1, indices[1])}
+          {renderCard(2, indices[2])}
+          {renderCard(3, indices[3])}
+          {renderCard(4, indices[4])}
+        </div>
+      </div>
+
       <button
-        onClick={nextSlide}
-        disabled={isTransitioning}
-        className="absolute right-4 md:right-8 z-20 w-12 h-12 md:w-14 md:h-14 bg-white/10 backdrop-blur-md hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group border border-white/20"
-        aria-label="Next project"
+        type="button"
+        aria-label="Next"
+        onClick={goRight}
+        style={rightArrowStyles}
+        data-ps-arrow
       >
-        <svg
-          className="w-6 h-6 text-white group-hover:scale-110 transition-transform"
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path d="M9 5l7 7-7 7" />
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
-
-      {/* Slider Container */}
-      <div className="relative w-full h-full flex items-center justify-center px-4 md:px-16">
-        {/* Left Side Image */}
-        <div
-          className="hidden md:block absolute left-[5%] lg:left-[10%] w-[200px] lg:w-[280px] h-[280px] lg:h-[400px] rounded-2xl overflow-hidden shadow-2xl opacity-40 transform scale-90 transition-all duration-600 hover:opacity-60"
-          style={{
-            transform: `scale(0.85) translateX(${
-              isTransitioning
-                ? direction === 'right'
-                  ? '100px'
-                  : '-100px'
-                : '0'
-            })`,
-            opacity: isTransitioning && direction === 'right' ? '0.7' : '0.4',
-          }}
-        >
-          <Image
-            src={projects[getSlideIndex(-1)].image}
-            alt={projects[getSlideIndex(-1)].title}
-            fill
-            className="object-cover"
-            sizes="280px"
-          />
-        </div>
-
-        {/* Center Main Image */}
-        <div
-          className="relative w-full max-w-[500px] md:max-w-[600px] h-[400px] md:h-[500px] rounded-3xl overflow-hidden shadow-2xl transition-all duration-600"
-          style={{
-            transform: `perspective(1000px) translateX(${
-              isTransitioning
-                ? direction === 'left'
-                  ? '-50px'
-                  : '50px'
-                : '0'
-            }) scale(${isTransitioning ? '0.95' : '1'}) rotateY(${
-              isTransitioning
-                ? direction === 'left'
-                  ? '-5deg'
-                  : '5deg'
-                : '0deg'
-            })`,
-            opacity: isTransitioning ? '0.6' : '1',
-          }}
-        >
-          <Image
-            src={projects[currentIndex].image}
-            alt={projects[currentIndex].title}
-            fill
-            className="object-cover transition-transform duration-600"
-            priority
-            sizes="(max-width: 768px) 100vw, 600px"
-          />
-
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-
-          {/* Content Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-            <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
-              {projects[currentIndex].title}
-            </h3>
-            <p className="text-gray-200 mb-4 text-sm md:text-base">
-              {projects[currentIndex].description}
-            </p>
-
-            {/* Learn More Button */}
-            <a
-              href={projects[currentIndex].link}
-              className="!inline-flex !flex-row items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-full font-medium transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-black whitespace-nowrap"
-              style={{ display: 'inline-flex', flexDirection: 'row' }}
-            >
-              Learn more
-              <svg
-                className="w-5 h-5 flex-shrink-0"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </a>
-          </div>
-        </div>
-
-        {/* Right Side Image */}
-        <div
-          className="hidden md:block absolute right-[5%] lg:right-[10%] w-[200px] lg:w-[280px] h-[280px] lg:h-[400px] rounded-2xl overflow-hidden shadow-2xl opacity-40 transform scale-90 transition-all duration-600 hover:opacity-60"
-          style={{
-            transform: `scale(0.85) translateX(${
-              isTransitioning
-                ? direction === 'left'
-                  ? '100px'
-                  : '-100px'
-                : '0'
-            })`,
-            opacity: isTransitioning && direction === 'left' ? '0.7' : '0.4',
-          }}
-        >
-          <Image
-            src={projects[getSlideIndex(1)].image}
-            alt={projects[getSlideIndex(1)].title}
-            fill
-            className="object-cover"
-            sizes="280px"
-          />
-        </div>
-      </div>
-
-      {/* Progress Indicators */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 z-20">
-        {projects.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => {
-              if (!isTransitioning) {
-                setIsTransitioning(true)
-                setDirection(index > currentIndex ? 'left' : 'right')
-                setCurrentIndex(index)
-                setTimeout(() => {
-                  setIsTransitioning(false)
-                  setDirection(null)
-                }, 600)
-              }
-            }}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              index === currentIndex
-                ? 'bg-white w-8'
-                : 'bg-white/40 hover:bg-white/60'
-            }`}
-            aria-label={`Go to project ${index + 1}`}
-          />
-        ))}
-      </div>
     </div>
-  )
-}
+  );
+};
+
+// Demo usage: basic local component so you can try immediately
+// You can remove this export if you will import ProjectsSlider elsewhere.
+export const ProjectsSliderDemo: React.FC = () => {
+  const demoImages = [
+    'https://colorlib.com/wp/wp-content/uploads/sites/2/travelix-free-template.jpg',
+    'https://cdn.dribbble.com/userupload/15260343/file/original-7d5dbddf18652e424ca1f4c0e1b68214.jpg?format=webp&resize=1200x900&vertical=center',
+    'https://cdn.dribbble.com/userupload/15815660/file/original-fbc537de5d6ca9512a3f32429637d2bb.png?resize=400x300',
+    'https://cdn.dribbble.com/users/4678459/screenshots/16123098/tourink.png',
+    'https://cdn.dribbble.com/users/7927919/screenshots/18453761/dribbble_shot_hd_-_1_4x.jpg',
+    
+  ];
+
+  return (
+    <div style={{ padding: 24, background: '#0b0b0b', minHeight: '100vh', color: '#eaeaea'  }}>
+      <h2 style={{ margin: '0 0 16px 0' }}>Projects Slider Demo</h2>
+      <p style={{ margin: '0 0 24px 0', opacity: 0.75 }}>
+        Use the arrows or keyboard (←/→) to navigate. The center card scales up with a soft shadow.
+      </p>
+      <ProjectsSlider images={demoImages} viewportHeight={600} />
+    </div>
+  );
+};
