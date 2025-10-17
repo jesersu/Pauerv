@@ -1,5 +1,6 @@
 "use client";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 
 // ProjectsSlider component
 // - Shows 3 cards: left, center (emphasized), right
@@ -261,7 +262,7 @@ export const ProjectsSlider: React.FC<ProjectsSliderProps> = ({
 
     return (
       <div key={`${slotIndex}-${imgIndex}`} style={style} onTransitionEnd={slotIndex === 2 ? onTransitionEnd : undefined}>
-        <img src={src} alt={`Slide ${imgIndex + 1}`} style={imgStyles} draggable={false} />
+        <Image src={src} alt={`Slide ${imgIndex + 1}`} fill style={imgStyles} draggable={false} />
       </div>
     );
   };

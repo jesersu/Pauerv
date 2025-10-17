@@ -202,7 +202,7 @@ export function ContactSection() {
             Get In Touch
           </h2>
           <p className="text-lg sm:text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto">
-            Have a project in mind? Let's collaborate and bring your ideas to life
+            Have a project in mind? Let&apos;s collaborate and bring your ideas to life
           </p>
         </div>
 
