@@ -1,4 +1,6 @@
 import Image from 'next/image'
+import { useRef, useEffect } from 'react'
+import gsap from 'gsap'
 import type { Service } from '@/services/servicesService'
 
 interface ServiceCardProps {
@@ -6,11 +8,81 @@ interface ServiceCardProps {
 }
 
 export function ServiceCard({ service }: ServiceCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const imageRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLAnchorElement>(null)
+
+  useEffect(() => {
+    const card = cardRef.current
+    const image = imageRef.current
+    const button = buttonRef.current
+
+    if (!card || !image || !button) return
+
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReducedMotion) return
+
+    // Hover animation for card
+    const handleMouseEnter = () => {
+      gsap.to(card, {
+        y: -10,
+        duration: 0.3,
+        ease: 'power2.out',
+      })
+
+      gsap.to(image, {
+        scale: 1.1,
+        rotation: 3,
+        duration: 0.3,
+        ease: 'power2.out',
+      })
+
+      gsap.to(button, {
+        scale: 1.05,
+        duration: 0.3,
+        ease: 'power2.out',
+      })
+    }
+
+    const handleMouseLeave = () => {
+      gsap.to(card, {
+        y: 0,
+        duration: 0.3,
+        ease: 'power2.out',
+      })
+
+      gsap.to(image, {
+        scale: 1,
+        rotation: 0,
+        duration: 0.3,
+        ease: 'power2.out',
+      })
+
+      gsap.to(button, {
+        scale: 1,
+        duration: 0.3,
+        ease: 'power2.out',
+      })
+    }
+
+    card.addEventListener('mouseenter', handleMouseEnter)
+    card.addEventListener('mouseleave', handleMouseLeave)
+
+    return () => {
+      card.removeEventListener('mouseenter', handleMouseEnter)
+      card.removeEventListener('mouseleave', handleMouseLeave)
+    }
+  }, [])
+
   return (
-    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col h-full border border-gray-100">
+    <div
+      ref={cardRef}
+      className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col h-full border border-gray-100"
+    >
       {/* Image Container */}
-      <div className="relative w-full h-48 bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center p-8">
-        <div className="relative w-full h-full">
+      <div className="relative w-full h-48 bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center p-8 overflow-hidden">
+        <div ref={imageRef} className="relative w-full h-full">
           <Image
             src={service.image}
             alt={service.title}
@@ -47,8 +119,9 @@ export function ServiceCard({ service }: ServiceCardProps) {
 
         {/* Learn More Button */}
         <a
+          ref={buttonRef}
           href={service.link}
-          className="!inline-flex !flex-row items-center justify-center gap-2 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white px-6 py-3 rounded-full font-medium transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2 whitespace-nowrap text-sm md:text-base w-full"
+          className="!inline-flex !flex-row items-center justify-center gap-2 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white px-6 py-3 rounded-full font-medium transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2 whitespace-nowrap text-sm md:text-base w-full"
           style={{ display: 'inline-flex', flexDirection: 'row' }}
         >
           <span>Learn more</span>

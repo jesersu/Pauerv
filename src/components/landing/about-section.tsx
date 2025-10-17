@@ -1,399 +1,253 @@
-'use client'
+"use client";
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-interface Drop {
-  id: number
-  left: string
-  delay: number
-  size: number
-  opacity: number
-}
+gsap.registerPlugin(ScrollTrigger);
 
 export function AboutSection() {
-  const [isVisible, setIsVisible] = useState(false)
-  const [scrollProgress, setScrollProgress] = useState(0)
-  const [floatingDrops, setFloatingDrops] = useState<Drop[]>([])
-  const sectionRef = useRef<HTMLElement>(null)
+  const sectionRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  // Generate floating drops on scroll
   useEffect(() => {
-    const handleScroll = () => {
-      if (!sectionRef.current) return
+    const section = sectionRef.current;
+    const content = contentRef.current;
 
-      const rect = sectionRef.current.getBoundingClientRect()
-      const windowHeight = window.innerHeight
+    if (!section || !content) return;
 
-      // Calculate scroll progress relative to section
-      const sectionTop = rect.top
-      const sectionHeight = rect.height
-      const progress = Math.max(0, Math.min(1, (windowHeight - sectionTop) / (windowHeight + sectionHeight)))
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      setScrollProgress(progress)
-
-      // Generate drops as user scrolls toward section
-      if (progress > 0.1 && progress < 0.8 && floatingDrops.length < 12) {
-        if (Math.random() > 0.95) {
-          const newDrop: Drop = {
-            id: Date.now() + Math.random(),
-            left: `${Math.random() * 90 + 5}%`,
-            delay: 0,
-            size: Math.random() * 30 + 20,
-            opacity: Math.random() * 0.3 + 0.2,
-          }
-          setFloatingDrops(prev => [...prev, newDrop])
-
-          setTimeout(() => {
-            setFloatingDrops(prev => prev.filter(d => d.id !== newDrop.id))
-          }, 4000)
-        }
-      }
+    if (prefersReducedMotion) {
+      // Show content immediately without animation
+      gsap.set(content, { y: 0, opacity: 1 });
+      gsap.set(content.querySelectorAll('[data-speed]'), { opacity: 1, y: 0 });
+      return;
     }
 
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll()
-
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [floatingDrops.length])
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true)
-          }
-        })
+    // Animate the entire content area moving up as you scroll down
+    gsap.fromTo(
+      content,
+      {
+        y: 1000,
+        opacity: 0,
       },
-      { threshold: 0.2 }
-    )
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current)
-    }
-
-    return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current)
+      {
+        y: -1000,
+        opacity: 1,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 5,
+          invalidateOnRefresh: true,
+        },
       }
-    }
-  }, [])
+    );
 
-  const mainDrops = [
-    {
-      shape: 'circle',
-      title: 'Our Mission',
-      content: 'To transform innovative ideas into exceptional digital experiences that make a lasting impact.',
-      gradient: 'from-purple-400 via-purple-500 to-purple-600',
-      delay: 0,
-    },
-    {
-      shape: 'clover',
-      title: 'Our Values',
-      content: 'Innovation, integrity, and excellence drive everything we do. We believe in creating solutions that matter.',
-      gradient: 'from-pink-400 via-pink-500 to-pink-600',
-      delay: 200,
-    },
-    {
-      shape: 'ghost',
-      title: 'Our Vision',
-      content: 'Building a future where technology empowers everyone to achieve their dreams and aspirations.',
-      gradient: 'from-blue-400 via-blue-500 to-blue-600',
-      delay: 400,
-    },
-  ]
+    // Get all elements with data-speed attribute
+    const speedElements = content.querySelectorAll('[data-speed]');
+
+    // Create scroll-based parallax effect for each element
+    speedElements.forEach((element) => {
+      const speed = element.getAttribute('data-speed');
+
+      if (!speed) return;
+
+      // Parse speed value (handle "clamp()" syntax)
+      let speedValue = 1;
+      if (speed.includes('clamp')) {
+        const match = speed.match(/clamp\(([\d.]+)\)/);
+        speedValue = match ? parseFloat(match[1]) : 1;
+      } else {
+        speedValue = parseFloat(speed);
+      }
+
+      // Calculate movement range based on speed (relative to container movement)
+      const moveAmount = (speedValue - 1) * 300;
+
+      gsap.to(element, {
+        y: moveAmount,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 1,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      // Fade in on entrance with stagger
+      gsap.from(element, {
+        opacity: 0,
+        scale: 0.8,
+        duration: 0.8,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: element,
+          start: 'top 80%',
+          toggleActions: 'play none none reverse',
+        },
+      });
+    });
+
+    // Cleanup
+    return () => {
+      ScrollTrigger.getAll().forEach((trigger) => {
+        if (trigger.vars.trigger === section || trigger.vars.trigger === content) {
+          trigger.kill();
+        }
+      });
+    };
+  }, []);
 
   return (
     <section
       ref={sectionRef}
       id="about"
-      className="relative min-h-screen overflow-hidden bg-gradient-to-b from-white via-gray-50 to-white py-20 md:py-32"
+      className="relative w-full min-h-screen bg-gradient-to-b from-gray-900 to-black overflow-hidden"
     >
-      {/* Floating Drops (appear while scrolling) */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {floatingDrops.map((drop) => (
-          <div
-            key={drop.id}
-            className="absolute bottom-0 floating-drop"
-            style={{
-              left: drop.left,
-              width: `${drop.size}px`,
-              height: `${drop.size}px`,
-              opacity: drop.opacity,
-            }}
-          >
-            <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400 rounded-full blur-sm animate-float-up-morph" />
-          </div>
-        ))}
-      </div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),transparent_50%)]" />
 
-      <div className="relative container mx-auto px-4 md:px-8 lg:px-16">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-20">
         {/* Header */}
-        <div
-          className={`text-center mb-16 md:mb-24 transition-all duration-1000 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}
-        >
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+        <div className="text-center mb-32">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
             About Us
           </h2>
-          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            We are a passionate team dedicated to crafting digital experiences that inspire and innovate.
+          <p className="text-lg sm:text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto">
+            We transform ideas into exceptional digital experiences through innovation and creativity
           </p>
         </div>
 
-        {/* Main Liquid Drops with Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 md:gap-16 mb-20">
-          {mainDrops.map((drop, index) => (
+        {/* Parallax Content Area */}
+        <div
+          className="relative flex items-center justify-center"
+        >
+          {/* Image Group with parallax speeds */}
+          <div className="flex items-center justify-around gap-4 sm:gap-6 md:gap-8 w-full max-w-5xl px-4">
+            {/* Element 1 - Speed: clamp(1.25) */}
             <div
-              key={index}
-              className={`relative transition-all duration-1000 ${
-                isVisible
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-20'
-              }`}
-              style={{ transitionDelay: `${drop.delay}ms` }}
+              data-speed="clamp(1.25)"
+              className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32"
             >
-              {/* Liquid Drop Container */}
-              <div className="relative mx-auto" style={{ width: '280px', height: '320px' }}>
-                {/* Drop Shape with Morphing Animation */}
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${drop.gradient} shadow-2xl animate-morph-${drop.shape}`}
-                  style={{
-                    clipPath: getClipPath(drop.shape),
-                    filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.15))',
-                  }}
-                >
-                  {/* Inner Glow */}
-                  <div className="absolute inset-0 bg-white opacity-20 blur-xl" />
-
-                  {/* Shine Effect */}
-                  <div className="absolute top-8 left-8 w-16 h-16 bg-white rounded-full opacity-30 blur-2xl animate-pulse-slow" />
-                </div>
-
-                {/* Content Inside Drop */}
-                <div
-                  className={`absolute inset-0 flex flex-col items-center justify-center p-8 text-center transition-all duration-700 ${
-                    isVisible ? 'opacity-100' : 'opacity-0'
-                  }`}
-                  style={{ transitionDelay: `${drop.delay + 400}ms` }}
-                >
-                  <h3 className="text-2xl font-bold text-white mb-4 drop-shadow-lg">
-                    {drop.title}
-                  </h3>
-                  <p className="text-white/90 text-sm leading-relaxed drop-shadow-md">
-                    {drop.content}
-                  </p>
-                </div>
-
-                {/* Ripple Effect on Hover */}
-                <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                  <div className="absolute inset-0 animate-ripple bg-white rounded-full" style={{ clipPath: getClipPath(drop.shape) }} />
-                </div>
+              <div className="w-full h-full rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 shadow-lg shadow-purple-500/50 flex items-center justify-center">
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-purple-300 text-xs sm:text-sm font-mono whitespace-nowrap">
+                Fast
               </div>
             </div>
-          ))}
-        </div>
 
-        {/* Stats Section with Liquid Effect */}
-        <div
-          className={`transition-all duration-1000 delay-600 ${
-            isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-          }`}
-        >
-          <div className="relative bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 rounded-3xl p-8 md:p-12 overflow-hidden">
-            {/* Animated Liquid Background */}
-            <div className="absolute inset-0 opacity-20">
-              <div className="absolute inset-0 animate-wave" style={{
-                backgroundImage: 'radial-gradient(circle at 20% 50%, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
-              }}></div>
+            {/* Element 2 - Speed: 0.8 */}
+            <div
+              data-speed="0.8"
+              className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32"
+            >
+              <div className="w-full h-full rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 shadow-lg shadow-blue-500/50 flex items-center justify-center">
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+              <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-blue-300 text-xs sm:text-sm font-mono whitespace-nowrap">
+                Smart
+              </div>
             </div>
 
-            <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-8">
-              {[
-                { value: '150+', label: 'Projects Completed' },
-                { value: '50+', label: 'Happy Clients' },
-                { value: '10+', label: 'Years Experience' },
-                { value: '24/7', label: 'Support Available' },
-              ].map((stat, index) => (
-                <div
-                  key={index}
-                  className="text-center group cursor-default"
-                  style={{
-                    animation: isVisible ? `fadeInUp 0.6s ease-out ${index * 0.1}s both` : 'none',
-                  }}
-                >
-                  <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2 group-hover:scale-110 transition-transform duration-300">
-                    {stat.value}
-                  </div>
-                  <div className="text-sm md:text-base text-white/90 font-medium">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
+            {/* Element 3 - Speed: 1.0 */}
+            <div
+              data-speed="1"
+              className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-36 lg:h-36"
+            >
+              <div className="w-full h-full rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/50 flex items-center justify-center">
+                <svg className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                </svg>
+              </div>
+              <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-green-300 text-xs sm:text-sm font-mono whitespace-nowrap">
+                Creative
+              </div>
+            </div>
+
+            {/* Element 4 - Speed: 1.2 */}
+            <div
+              data-speed="1.2"
+              className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32"
+            >
+              <div className="w-full h-full rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 shadow-lg shadow-orange-500/50 flex items-center justify-center">
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                </svg>
+              </div>
+              <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-orange-300 text-xs sm:text-sm font-mono whitespace-nowrap">
+                Bold
+              </div>
+            </div>
+
+            {/* Element 5 - Speed: clamp(0.9) */}
+            <div
+              data-speed="clamp(0.9)"
+              className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32"
+            >
+              <div className="w-full h-full rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 shadow-lg shadow-pink-500/50 flex items-center justify-center">
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </div>
+              <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-pink-300 text-xs sm:text-sm font-mono whitespace-nowrap">
+                Passion
+              </div>
             </div>
           </div>
         </div>
 
-        {/* CTA Section */}
-        <div
-          className={`text-center mt-16 transition-all duration-1000 delay-800 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}
-        >
-          <p className="text-xl md:text-2xl text-gray-700 mb-6">
-            Ready to bring your vision to life?
+        {/* Stats Section */}
+        <div 
+          className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto"
+          ref={contentRef}>
+          <div className="text-center">
+            <div className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 mb-2">
+              150+
+            </div>
+            <div className="text-gray-400 text-sm sm:text-base">Projects Completed</div>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-600 mb-2">
+              50+
+            </div>
+            <div className="text-gray-400 text-sm sm:text-base">Happy Clients</div>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600 mb-2">
+              10+
+            </div>
+            <div className="text-gray-400 text-sm sm:text-base">Years Experience</div>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-600 mb-2">
+              24/7
+            </div>
+            <div className="text-gray-400 text-sm sm:text-base">Support Available</div>
+          </div>
+        </div>
+
+        {/* Mission Statement */}
+        <div className="mt-32 max-w-4xl mx-auto text-center">
+          <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-6">
+            Our Mission
+          </h3>
+          <p className="text-base sm:text-lg md:text-xl text-gray-300 leading-relaxed">
+            We believe in the power of technology to transform businesses and create meaningful impact.
+            Our team of passionate developers, designers, and innovators work together to deliver
+            cutting-edge solutions that drive success and exceed expectations.
           </p>
-          <a
-            href="#contact"
-            className="!inline-flex !flex-row items-center gap-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 whitespace-nowrap"
-            style={{ display: 'inline-flex', flexDirection: 'row' }}
-          >
-            <span>Let&apos;s Talk</span>
-            <svg
-              className="w-5 h-5 flex-shrink-0"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </a>
         </div>
       </div>
-
-      {/* CSS Animations */}
-      <style jsx>{`
-        @keyframes float-up-morph {
-          0% {
-            transform: translateY(0) scale(1);
-            border-radius: 50%;
-          }
-          25% {
-            transform: translateY(-25vh) scale(1.1, 0.9);
-            border-radius: 40% 60% 50% 50%;
-          }
-          50% {
-            transform: translateY(-50vh) scale(0.9, 1.2);
-            border-radius: 50% 50% 40% 60%;
-          }
-          75% {
-            transform: translateY(-75vh) scale(1.05, 0.95);
-            border-radius: 60% 40% 60% 40%;
-          }
-          100% {
-            transform: translateY(-100vh) scale(1);
-            border-radius: 50%;
-            opacity: 0;
-          }
-        }
-
-        @keyframes morph-circle {
-          0%, 100% {
-            border-radius: 50%;
-          }
-          25% {
-            border-radius: 45% 55% 50% 50%;
-          }
-          50% {
-            border-radius: 50% 50% 45% 55%;
-          }
-          75% {
-            border-radius: 55% 45% 55% 45%;
-          }
-        }
-
-        @keyframes ripple {
-          0% {
-            opacity: 0.3;
-            transform: scale(0.8);
-          }
-          100% {
-            opacity: 0;
-            transform: scale(1.2);
-          }
-        }
-
-        @keyframes wave {
-          0%, 100% {
-            transform: translateX(-50%) translateY(0);
-          }
-          50% {
-            transform: translateX(50%) translateY(-20px);
-          }
-        }
-
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes pulse-slow {
-          0%, 100% {
-            opacity: 0.3;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.5;
-            transform: scale(1.1);
-          }
-        }
-
-        .floating-drop {
-          will-change: transform, opacity;
-        }
-
-        .animate-float-up-morph {
-          animation: float-up-morph 4s ease-out forwards;
-        }
-
-        .animate-morph-circle {
-          animation: morph-circle 6s ease-in-out infinite;
-        }
-
-        .animate-morph-clover {
-          animation: morph-circle 7s ease-in-out infinite reverse;
-        }
-
-        .animate-morph-ghost {
-          animation: morph-circle 8s ease-in-out infinite;
-        }
-
-        .animate-ripple {
-          animation: ripple 2s ease-out infinite;
-        }
-
-        .animate-wave {
-          animation: wave 10s ease-in-out infinite;
-        }
-
-        .animate-pulse-slow {
-          animation: pulse-slow 3s ease-in-out infinite;
-        }
-      `}</style>
     </section>
-  )
-}
-
-// Helper function to generate clip paths for different drop shapes
-function getClipPath(shape: string): string {
-  switch (shape) {
-    case 'circle':
-      return 'ellipse(50% 50% at 50% 50%)'
-    case 'clover':
-      return 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)'
-    case 'ghost':
-      return 'polygon(50% 0%, 80% 5%, 95% 20%, 98% 40%, 100% 60%, 100% 85%, 90% 100%, 80% 95%, 70% 100%, 60% 95%, 50% 100%, 40% 95%, 30% 100%, 20% 95%, 10% 100%, 0% 85%, 0% 60%, 2% 40%, 5% 20%, 20% 5%)'
-    default:
-      return 'ellipse(50% 50% at 50% 50%)'
-  }
+  );
 }

@@ -24,7 +24,7 @@ export function Navigation() {
     }
   }
 
-  // Detect when user scrolls to projects section and track scroll position
+  // Detect when user reaches projects section and onwards
   useEffect(() => {
     const handleScroll = () => {
       // Check scroll position
@@ -33,9 +33,9 @@ export function Navigation() {
       const projectsSection = document.querySelector('#projects')
       if (projectsSection) {
         const rect = projectsSection.getBoundingClientRect()
-        // Check if projects section is in viewport
-        const isInView = rect.top <= 100 && rect.bottom >= 100
-        setIsProjectsSection(isInView)
+        // Check if user has reached or scrolled past the projects section
+        const isAtOrPastProjects = rect.top <= 100
+        setIsProjectsSection(isAtOrPastProjects)
       }
     }
 
@@ -49,7 +49,7 @@ export function Navigation() {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 border-b transition-all duration-500 ${
         isProjectsSection
-          ? 'bg-gradient-to-r from-purple-600/95 via-pink-600/95 to-red-600/95 backdrop-blur-md border-white/20'
+          ? 'bg-black/80 backdrop-blur-lg border-white/10 shadow-lg'
           : 'bg-transparent border-white/5'
       }`}
     >
