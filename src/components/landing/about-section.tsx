@@ -1,16 +1,18 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 export function AboutSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  // useGSAP provides automatic cleanup and better React integration
+  useGSAP(() => {
     const section = sectionRef.current;
     const content = contentRef.current;
 
@@ -94,15 +96,8 @@ export function AboutSection() {
       });
     });
 
-    // Cleanup
-    return () => {
-      ScrollTrigger.getAll().forEach((trigger) => {
-        if (trigger.vars.trigger === section || trigger.vars.trigger === content) {
-          trigger.kill();
-        }
-      });
-    };
-  }, []);
+    // Cleanup: useGSAP automatically reverts all animations created within this context
+  }, { scope: sectionRef }); // Scope ensures animations are contained to this component
 
   return (
     <section

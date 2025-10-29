@@ -12,6 +12,11 @@ const config: Config = {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
       },
+      fontFamily: {
+        josefin: ['var(--font-josefin-sans)'],
+        'josefin-slab': ['var(--font-josefin-slab)'],
+        poppins: ['var(--font-poppins)'],
+      },
     },
   },
   plugins: [],

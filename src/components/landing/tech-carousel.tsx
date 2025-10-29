@@ -68,7 +68,7 @@ export function TechCarousel() {
   const duplicatedStack = [...techStack, ...techStack]
 
   return (
-    <div className="w-full overflow-hidden bg-black/30 backdrop-blur-sm border-y border-white/10 py-6">
+    <div className="w-full overflow-hidden bg-[#10172B] backdrop-blur-sm  py-6">
       <div
         ref={carouselRef}
         className="flex gap-8 md:gap-12"

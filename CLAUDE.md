@@ -64,11 +64,16 @@ src/components/
 ├── landing/           # Landing page specific components
 │   ├── navigation.tsx        # Sticky nav with scroll detection
 │   ├── scroll-hero.tsx       # Hero with GSAP scroll animations
+│   ├── projects-section.tsx  # Animated projects section with GSAP
 │   ├── projects-slider.tsx   # Custom carousel with keyboard nav
 │   ├── services-section.tsx  # Async data fetching
 │   ├── service-card.tsx      # Individual service cards
 │   ├── about-section.tsx     # About with morphing shapes
-│   └── tech-carousel.tsx     # Auto-scrolling tech stack
+│   ├── tech-carousel.tsx     # Auto-scrolling tech stack
+│   ├── contact-section.tsx   # Contact form with validation
+│   ├── footer.tsx            # Footer with social links
+│   ├── placeholder-sections.tsx  # Demo placeholder sections
+│   └── mobile-menu.tsx       # Mobile navigation menu
 ├── ui/                # Reusable UI components
 └── server/            # Server-only components
 ```
@@ -93,11 +98,35 @@ useEffect(() => {
 
 ### Animation Patterns
 
-**GSAP with ScrollTrigger** (`scroll-hero.tsx`):
-- Pin elements during scroll
+**GSAP with useGSAP Hook** (`scroll-hero.tsx`, `about-section.tsx`):
+- Uses official `@gsap/react` package for React integration
+- Automatic cleanup and context management
+- Pin elements during scroll with ScrollTrigger
 - Parallax effects and reveal animations
 - **Important**: Always check `prefers-reduced-motion` and disable animations if true
 - Debounce resize handlers (250ms) to prevent excessive ScrollTrigger.refresh() calls
+
+**Best Practice Pattern**:
+```typescript
+import { useGSAP } from '@gsap/react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger, useGSAP)
+
+const containerRef = useRef()
+
+useGSAP(() => {
+  // All GSAP animations here
+  gsap.to('.element', {
+    scrollTrigger: {
+      trigger: section,
+      // ... config
+    }
+  })
+  // Cleanup is automatic!
+}, { scope: containerRef }) // Scoping prevents animations from affecting other components
+```
 
 **Reduced Motion Support**:
 ```typescript
@@ -159,21 +188,53 @@ Complex carousel component with specific patterns:
 - **Props**: `neighborScale`, `outerScale`, `centerScale` control card scaling
 - `viewportHeightCss` accepts CSS values like "50svh" for responsive height
 - `spacingPx` controls horizontal spacing between cards
-- Keyboard navigation with arrow keys (when focused)
+- Keyboard navigation with arrow keys (when focused on container)
 - Touch-friendly with proper button sizing on mobile
+- **Navigation Buttons**: z-index 20 to always stay above cards (even on hover)
+- **Click Interaction**: Side cards (left/right) are clickable to navigate
+  - Click left card → moves it to center (same as left arrow)
+  - Click right card → moves it to center (same as right arrow)
+  - Center card is not clickable (cursor: default)
+  - Keyboard accessible with Enter/Space keys
+  - ARIA labels for screen readers
+- **Hover Effects**: Smooth interactive animations on mouse over
+  - All cards: lift up 8px with elastic bounce easing (cubic-bezier(0.34, 1.56, 0.64, 1))
+  - Side cards (clickable): lift up 12px + scale 1.02x for extra emphasis
+  - Enhanced shadow (0 20px 40px) with subtle white border glow
+  - Brightness increases to 1.1 for emphasis
+  - Image zooms to 1.08x scale with smooth 0.6s transition
+  - Clickable cards have focus outline for accessibility
+  - z-index 10 for hovered cards (below navigation buttons at z-index 20)
+  - Respects `@media (hover: hover)` for touch device compatibility
 
 ### Hero Section (`scroll-hero.tsx`)
+- Uses `useGSAP` hook for optimal React integration
 - GSAP timeline synced to scroll position
+- **Background Animation**: Transitions from bright tech cyan to soft dark blue during scroll
+  - Initial: `linear-gradient(135deg, #0f172a 0%, #0891b2 50%, #38bdf8 100%)` (slate-900 → cyan-600 → sky-400)
+  - Final: `linear-gradient(to bottom, #0f172a, #1e40af, #0f172a)` (slate-900 → blue-800 → slate-900)
+  - Duration: 2 seconds with power2.inOut easing
+  - Color story: Vibrant tech cyan → Deep navy blue (maintains tech theme with better visibility)
 - Pin container during animation sequence
 - Stagger reveals for text and images
+- Updated text: "Smart solution", "Solid results", "Turning ideas into high-performing technology"
+- Custom fonts: Josefin Sans (rows 1-2), Josefin Slab (row 3)
 - **Critical**: Debounced resize handler to prevent performance issues
-- Cleanup: Always `ScrollTrigger.getAll().forEach(t => t.kill())` on unmount
+- Automatic cleanup via `useGSAP` - no manual ScrollTrigger killing needed
 
 ### Navigation (`navigation.tsx`)
 - Sticky positioning with scroll detection
 - Mobile menu with hamburger animation
 - Smooth scroll to sections with offset calculation
 - Links to section IDs: `#projects`, `#services`, `#about`
+
+### Projects Section (`projects-section.tsx`)
+- Uses `useGSAP` hook for scroll-triggered entrance animations
+- Staggered reveal of title, subtitle, and slider
+- ScrollTrigger starts at 'top 80%' for early activation
+- Wraps `ProjectsSlider` component with animation layer
+- Timeline sequence: title (from top) → subtitle (from bottom) → slider (scale + fade)
+- Respects `prefers-reduced-motion` preference
 
 ### Services Section (`services-section.tsx`)
 - Fetches data from service layer in `useEffect`
@@ -258,11 +319,6 @@ export const metadata = {
 - Console errors for development debugging
 - Production: Consider error boundaries for client components
 
-### Git Workflow
-Current branch: `main`
-- No feature branch workflow enforced
-- Recent commits focus on: Services section, animations, navigation
-
 ## Integration Points
 
 ### Future Backend Integration
@@ -300,7 +356,9 @@ npm start  # Node.js server on port 3000
 
 ## Documentation References
 
-- `README.md` - Setup instructions and architecture overview
-- `IMPROVEMENTS.md` - Performance optimization changelog (7 major improvements documented)
+- `README.md` - Setup instructions and basic architecture overview
+- `IMPROVEMENTS.md` - Performance optimization changelog with before/after metrics
+  - 7 major improvements documented (image optimization, debounced resize, accessibility, reduced motion, CSS optimization, image placeholders, SEO)
+  - Performance impact metrics and technical implementation details
 - `package.json` - Dependencies and scripts
 - [Next.js App Router Docs](https://nextjs.org/docs/app)

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Poppins } from 'next/font/google'
+import { Poppins, Josefin_Sans, Josefin_Slab } from 'next/font/google'
 import './globals.css'
 import { Footer } from '@/components/landing/footer'
 
@@ -7,6 +7,18 @@ const poppins = Poppins({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-poppins',
+})
+
+const josefinSans = Josefin_Sans({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-josefin-sans',
+})
+
+const josefinSlab = Josefin_Slab({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-josefin-slab',
 })
 
 export const viewport: Viewport = {
@@ -80,7 +92,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={poppins.className}>
+      <body className={`${poppins.variable} ${josefinSans.variable} ${josefinSlab.variable} ${poppins.className}`}>
         {children}
         <Footer />
       </body>

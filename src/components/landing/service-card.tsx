@@ -118,7 +118,7 @@ export function ServiceCard({ service }: ServiceCardProps) {
         </div>
 
         {/* Learn More Button */}
-        <a
+        {/* <a
           ref={buttonRef}
           href={service.link}
           className="!inline-flex !flex-row items-center justify-center gap-2 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white px-6 py-3 rounded-full font-medium transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2 whitespace-nowrap text-sm md:text-base w-full"
@@ -136,7 +136,7 @@ export function ServiceCard({ service }: ServiceCardProps) {
           >
             <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
           </svg>
-        </a>
+        </a> */}
       </div>
     </div>
   )
