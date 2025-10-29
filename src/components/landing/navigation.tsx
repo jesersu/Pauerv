@@ -47,7 +47,7 @@ export function Navigation() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 border-b transition-all duration-500 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         isProjectsSection
           ? 'bg-black/80 backdrop-blur-lg border-white/10 shadow-lg'
           : 'bg-transparent border-white/5'

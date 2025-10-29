@@ -322,10 +322,10 @@ export function ScrollHero() {
       {/* Container that will be pinned */}
       <div
         ref={pinWrapperRef}
-        className="h-screen flex flex-col relative overflow-hidden pt-20"
+        className="h-screen flex flex-col relative overflow-visible pt-20 z-[60]"
       >
         {/* Main content area */}
-        <div className="flex-1 flex items-center justify-center relative overflow-hidden px-4 sm:px-6 md:px-8">
+        <div className="flex-1 flex items-center justify-center relative overflow-visible px-4 sm:px-6 md:px-8">
         {/* Initial Text: Smart solution, Solid results */}
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 sm:gap-4 md:gap-6 lg:gap-8 px-4">
           <div
@@ -355,7 +355,7 @@ export function ScrollHero() {
         {/* Top Left Image */}
         <div
           ref={imageTopRef}
-          className="absolute top-[-8%] left-[5%] sm:left-[8%] md:left-[10%] w-48 sm:w-56 md:w-72 lg:w-80 xl:w-96 opacity-0"
+          className="absolute top-[-8%] left-[5%] sm:left-[8%] md:left-[10%] w-48 sm:w-56 md:w-72 lg:w-80 xl:w-96 opacity-0 z-[1000]"
           style={{
             scale: 0.8
           }}
