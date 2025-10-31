@@ -220,6 +220,13 @@ export function ScrollHero() {
         duration: 0.8,
         ease: 'none'
       }, 1)
+
+      // Phase 4: Fade out final text and images at the end of scroll (prevents visibility issues)
+      .to([text2Row1, text2Row2, text2Row3, imageTop, imageBottom], {
+        opacity: 0,
+        duration: 0.5,
+        ease: 'none'
+      }, 2.5)  // Start fading out near the end
     }
 
     // Create initial animation
