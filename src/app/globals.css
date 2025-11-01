@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Z-Index Scale
+  -------------
+  Use this consistent scale to manage stacking contexts throughout the application.
+  Keep values as low as possible and avoid arbitrary high numbers.
+
+  Layer 0 (z-0):     Base content, default positioning
+  Layer 10 (z-10):   Decorative images, overlays within sections
+  Layer 20 (z-20):   Interactive elements like buttons, dropdowns
+  Layer 30 (z-30):   Tooltips, popovers
+  Layer 40 (z-40):   Sidebars, slide-out menus
+  Layer 50 (z-50):   Fixed navigation bars, headers
+  Layer 60 (z-60):   Modal dialogs, overlays (Reserved - not currently used)
+  Layer 100 (z-100): Toast notifications, alerts (Reserved - not currently used)
+
+  NEVER use arbitrary high values like z-[9999] or z-[1000].
+  If you need a higher layer, add it to this scale and document it.
+*/
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -75,6 +94,17 @@ a:not([role="button"]):not(.btn) {
     text-wrap: balance;
   }
 
+  /* Scroll offset for fixed navbar - prevents content from hiding behind navbar */
+  .scroll-offset {
+    scroll-margin-top: 6rem; /* 96px - accounts for navbar height + padding */
+  }
+
+  @media (min-width: 768px) {
+    .scroll-offset {
+      scroll-margin-top: 7rem; /* 112px - larger offset for desktop navbar */
+    }
+  }
+
   /* Mobile-first utility classes */
   .container-mobile {
     width: 100%;
@@ -94,5 +124,21 @@ a:not([role="button"]):not(.btn) {
       padding-left: 2rem;
       padding-right: 2rem;
     }
+  }
+
+  /* Fade-in animation for dropdowns */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.2s ease-out forwards;
   }
 }

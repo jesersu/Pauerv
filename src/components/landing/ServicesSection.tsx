@@ -1,26 +1,29 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useLocale, useTranslations } from 'next-intl'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { getServices, type Service } from '@/services/servicesService'
-import { ServiceCard } from './service-card'
+import { ServiceCard } from './ServiceCard'
 
 gsap.registerPlugin(ScrollTrigger)
 
 export function ServicesSection() {
+  const locale = useLocale()
+  const t = useTranslations('services')
   const [services, setServices] = useState<Service[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const sectionRef = useRef<HTMLElement>(null)
   const titleRef = useRef<HTMLDivElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
 
-  // Fetch services on mount
+  // Fetch services on mount and when locale changes
   useEffect(() => {
     const fetchServices = async () => {
       try {
         setIsLoading(true)
-        const data = await getServices()
+        const data = await getServices(locale as 'en' | 'es')
         setServices(data)
       } catch (error) {
         console.error('Failed to fetch services:', error)
@@ -30,7 +33,7 @@ export function ServicesSection() {
     }
 
     fetchServices()
-  }, [])
+  }, [locale])
 
   // GSAP animations after services are loaded
   useEffect(() => {
@@ -110,7 +113,7 @@ export function ServicesSection() {
         <div className="container mx-auto px-4 md:px-8 lg:px-16">
           <div className="text-center">
             <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-purple-600 border-r-transparent"></div>
-            <p className="mt-4 text-gray-600">Loading services...</p>
+            <p className="mt-4 text-gray-600">{t('loading')}</p>
           </div>
         </div>
       </section>
@@ -123,11 +126,10 @@ export function ServicesSection() {
         {/* Section Header */}
         <div ref={titleRef} className="text-center mb-12 md:mb-16">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-            Our Services
+            {t('title')}
           </h2>
           <p className="text-gray-600 text-base md:text-lg max-w-2xl mx-auto">
-            We offer a wide range of services to help bring your ideas to life
-            with cutting-edge technology and expert craftsmanship.
+            {t('subtitle')}
           </p>
         </div>
 

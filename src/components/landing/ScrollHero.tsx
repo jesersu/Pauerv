@@ -2,12 +2,14 @@
 
 import { useRef, useState, useEffect } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { Link } from '@/i18n/routing'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { imagePlaceholders } from '@/lib/image-placeholders'
-import { TechCarousel } from './tech-carousel'
+import { TechCarousel } from './TechCarousel'
+import { Z_INDEX } from '@/config/constants'
 
 // Register GSAP plugins
 if (typeof window !== 'undefined') {
@@ -15,6 +17,7 @@ if (typeof window !== 'undefined') {
 }
 
 export function ScrollHero() {
+  const t = useTranslations('hero')
   const sectionRef = useRef<HTMLDivElement>(null)
   const pinWrapperRef = useRef<HTMLDivElement>(null)
   const [isMobile, setIsMobile] = useState(false)
@@ -265,17 +268,17 @@ export function ScrollHero() {
         <div className="max-w-3xl mx-auto flex flex-col items-center gap-6 sm:gap-8">
           {/* Row 1: Smart Solution - Under navbar */}
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white font-josefin text-center">
-            Smart solution
+            {t('title1')}
           </h1>
 
           {/* Row 2: Solid results */}
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white font-josefin text-center">
-            Solid results
+            {t('title2')}
           </h2>
 
           {/* Subtitle */}
           <p className="text-base sm:text-lg md:text-xl text-white font-josefin-slab text-center max-w-2xl px-4">
-            Turning ideas into high-performing technology
+            {t('subtitle')}
           </p>
 
           {/* Row 3: Animation Video - Full animation visible */}
@@ -300,7 +303,7 @@ export function ScrollHero() {
             className="inline-block px-6 py-3 sm:px-8 sm:py-4 bg-cyan-600 hover:bg-cyan-500 text-white text-lg sm:text-xl font-bold rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-cyan-400 focus:ring-opacity-50"
             aria-label="View our projects"
           >
-            Our projects
+            {t('ourProjects')}
           </Link>
 
           {/* Row 5: Contact Us */}
@@ -309,7 +312,7 @@ export function ScrollHero() {
             className="inline-block px-6 py-3 sm:px-8 sm:py-4 bg-transparent border-2 border-white hover:bg-white hover:text-slate-900 text-white text-lg sm:text-xl font-bold rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-50"
             aria-label="Contact us"
           >
-            Contact us
+            {t('contactUs')}
           </Link>
         </div>
       </div>
@@ -329,7 +332,8 @@ export function ScrollHero() {
       {/* Container that will be pinned */}
       <div
         ref={pinWrapperRef}
-        className="h-screen flex flex-col relative overflow-visible pt-20 z-[60]"
+        className="h-screen flex flex-col relative overflow-visible pt-20"
+        style={{ zIndex: Z_INDEX.BASE }}
       >
         {/* Main content area */}
         <div className="flex-1 flex items-center justify-center relative overflow-visible px-4 sm:px-6 md:px-8">
@@ -340,21 +344,21 @@ export function ScrollHero() {
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-white opacity-0 font-josefin text-center"
             style={{ transform: 'translateY(50px)' }}
           >
-            Smart solution
+            {t('title1')}
           </div>
           <div
             ref={text1Row2Ref}
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-white opacity-0 font-josefin text-center"
             style={{ transform: 'translateY(50px)' }}
           >
-            Solid results
+            {t('title2')}
           </div>
           <div
             ref={text1Row3Ref}
             className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-white opacity-0 font-josefin-slab text-center max-w-4xl px-4"
             style={{ transform: 'translateY(50px)' }}
           >
-            Turning ideas into high-performing technology
+            {t('subtitle')}
           </div>
         </div>
 
@@ -362,9 +366,10 @@ export function ScrollHero() {
         {/* Top Left Image */}
         <div
           ref={imageTopRef}
-          className="absolute top-[-8%] left-[5%] sm:left-[8%] md:left-[10%] w-48 sm:w-56 md:w-72 lg:w-80 xl:w-96 opacity-0 z-[1000]"
+          className="absolute top-[-8%] left-[5%] sm:left-[8%] md:left-[10%] w-48 sm:w-56 md:w-72 lg:w-80 xl:w-96 opacity-0"
           style={{
-            scale: 0.8
+            scale: 0.8,
+            zIndex: Z_INDEX.DECORATIVE
           }}
         >
           <Image
@@ -409,19 +414,19 @@ export function ScrollHero() {
             ref={text2Row1Ref}
             className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold text-white opacity-0 text-center"
           >
-            WE
+            {t('finalText1')}
           </div>
           <div
             ref={text2Row2Ref}
             className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold text-white opacity-0 text-center"
           >
-            BUILD
+            {t('finalText2')}
           </div>
           <div
             ref={text2Row3Ref}
             className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold text-white opacity-0 text-center"
           >
-            FOR YOU
+            {t('finalText3')}
           </div>
         </div>
         </div>

@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function ContactSection() {
+  const t = useTranslations('contact');
   const sectionRef = useRef<HTMLElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -202,7 +204,7 @@ export function ContactSection() {
     } catch (error) {
       console.error('Error submitting form:', error);
       setSubmitStatus('error');
-      setErrorMessage(error instanceof Error ? error.message : 'Failed to send email. Please try again later.');
+      setErrorMessage(error instanceof Error ? error.message : t('form.error'));
 
       // Reset error message after 5 seconds
       setTimeout(() => {
@@ -218,7 +220,7 @@ export function ContactSection() {
     <section
       ref={sectionRef}
       id="contact"
-      className="relative w-full min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden"
+      className="scroll-offset relative w-full min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden"
     >
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
@@ -230,10 +232,10 @@ export function ContactSection() {
         {/* Title */}
         <div ref={titleRef} className="text-center mb-16">
           <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
-            Get In Touch
+            {t('title')}
           </h2>
           <p className="text-lg sm:text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto">
-            Have a project in mind? Let&apos;s collaborate and bring your ideas to life
+            {t('subtitle')}
           </p>
         </div>
 
@@ -250,7 +252,7 @@ export function ContactSection() {
                 htmlFor="name"
                 className="block text-sm font-medium text-gray-300 mb-2"
               >
-                Your Name
+                {t('form.name')}
               </label>
               <input
                 type="text"
@@ -260,7 +262,7 @@ export function ContactSection() {
                 onChange={handleInputChange}
                 required
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
-                placeholder="John Doe"
+                placeholder={t('form.namePlaceholder')}
               />
             </div>
 
@@ -270,7 +272,7 @@ export function ContactSection() {
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-300 mb-2"
               >
-                Email Address
+                {t('form.email')}
               </label>
               <input
                 type="email"
@@ -280,7 +282,7 @@ export function ContactSection() {
                 onChange={handleInputChange}
                 required
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
-                placeholder="john@example.com"
+                placeholder={t('form.emailPlaceholder')}
               />
             </div>
 
@@ -290,7 +292,7 @@ export function ContactSection() {
                 htmlFor="subject"
                 className="block text-sm font-medium text-gray-300 mb-2"
               >
-                Subject
+                {t('form.subject')}
               </label>
               <input
                 type="text"
@@ -300,7 +302,7 @@ export function ContactSection() {
                 onChange={handleInputChange}
                 required
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
-                placeholder="Project Inquiry"
+                placeholder={t('form.subjectPlaceholder')}
               />
             </div>
 
@@ -310,7 +312,7 @@ export function ContactSection() {
                 htmlFor="message"
                 className="block text-sm font-medium text-gray-300 mb-2"
               >
-                Message
+                {t('form.message')}
               </label>
               <textarea
                 id="message"
@@ -320,7 +322,7 @@ export function ContactSection() {
                 required
                 rows={6}
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 resize-none"
-                placeholder="Tell us about your project..."
+                placeholder={t('form.messagePlaceholder')}
               />
             </div>
 
@@ -352,10 +354,10 @@ export function ContactSection() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  Sending...
+                  {t('form.sending')}
                 </span>
               ) : (
-                'Send Message'
+                t('form.send')
               )}
             </button>
 
@@ -377,7 +379,7 @@ export function ContactSection() {
                     />
                   </svg>
                   <p className="text-green-300 font-medium">
-                    Thank you for your message! We&apos;ll get back to you soon.
+                    {t('form.success')}
                   </p>
                 </div>
               </div>
@@ -462,8 +464,8 @@ export function ContactSection() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">Phone</h3>
-                  <p className="text-gray-300">+1 (555) 123-4567</p>
-                  <p className="text-gray-300">Mon-Fri, 9AM-6PM EST</p>
+                  <p className="text-gray-300">+51 997 607 135</p>
+                  <p className="text-gray-300">Mon-Fri, 9AM-6PM EST, GMT-5</p>
                 </div>
               </div>
             </div>
@@ -497,8 +499,8 @@ export function ContactSection() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">Office</h3>
-                  <p className="text-gray-300">123 Innovation Drive</p>
-                  <p className="text-gray-300">Tech Valley, CA 94000</p>
+                  <p className="text-gray-300">Peru, Arequipa, Arequipa</p>
+                  <p className="text-gray-300">Cayma - Tomilla Mz I N. 10</p>
                 </div>
               </div>
             </div>

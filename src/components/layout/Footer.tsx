@@ -1,6 +1,11 @@
-import Link from 'next/link';
+'use client'
+
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 
 export function Footer() {
+  const t = useTranslations('footer');
   const currentYear = new Date().getFullYear();
 
   return (
@@ -14,7 +19,7 @@ export function Footer() {
               Pauerv
             </h3>
             <p className="text-sm text-gray-400 leading-relaxed">
-              We transform ideas into exceptional digital experiences through innovation, creativity, and cutting-edge technology.
+              {t('description')}
             </p>
             <div className="flex gap-4 pt-2">
               <a
@@ -58,7 +63,7 @@ export function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-lg font-semibold text-white mb-4">Quick Links</h4>
+            <h4 className="text-lg font-semibold text-white mb-4">{t('quickLinks')}</h4>
             <ul className="space-y-3">
               <li>
                 <a
@@ -66,7 +71,7 @@ export function Footer() {
                   className="text-sm hover:text-purple-400 transition-colors duration-200 inline-flex items-center group"
                 >
                   <span className="w-0 group-hover:w-2 h-0.5 bg-purple-400 transition-all duration-200 mr-0 group-hover:mr-2"></span>
-                  Home
+                  {t('home')}
                 </a>
               </li>
               <li>
@@ -75,7 +80,7 @@ export function Footer() {
                   className="text-sm hover:text-purple-400 transition-colors duration-200 inline-flex items-center group"
                 >
                   <span className="w-0 group-hover:w-2 h-0.5 bg-purple-400 transition-all duration-200 mr-0 group-hover:mr-2"></span>
-                  Projects
+                  {t('projects')}
                 </a>
               </li>
               <li>
@@ -84,7 +89,7 @@ export function Footer() {
                   className="text-sm hover:text-purple-400 transition-colors duration-200 inline-flex items-center group"
                 >
                   <span className="w-0 group-hover:w-2 h-0.5 bg-purple-400 transition-all duration-200 mr-0 group-hover:mr-2"></span>
-                  Services
+                  {t('services')}
                 </a>
               </li>
               <li>
@@ -93,7 +98,7 @@ export function Footer() {
                   className="text-sm hover:text-purple-400 transition-colors duration-200 inline-flex items-center group"
                 >
                   <span className="w-0 group-hover:w-2 h-0.5 bg-purple-400 transition-all duration-200 mr-0 group-hover:mr-2"></span>
-                  About Us
+                  {t('about')}
                 </a>
               </li>
               <li>
@@ -102,7 +107,7 @@ export function Footer() {
                   className="text-sm hover:text-purple-400 transition-colors duration-200 inline-flex items-center group"
                 >
                   <span className="w-0 group-hover:w-2 h-0.5 bg-purple-400 transition-all duration-200 mr-0 group-hover:mr-2"></span>
-                  Contact
+                  {t('contact')}
                 </a>
               </li>
             </ul>
@@ -110,7 +115,7 @@ export function Footer() {
 
           {/* Services */}
           <div>
-            <h4 className="text-lg font-semibold text-white mb-4">Our Services</h4>
+            <h4 className="text-lg font-semibold text-white mb-4">{t('servicesTitle')}</h4>
             <ul className="space-y-3">
               <li>
                 <a
@@ -239,8 +244,9 @@ export function Footer() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-400 text-center md:text-left">
-              © {currentYear} Pauerv. All rights reserved.
+              {t('copyright', { year: currentYear })}
             </p>
+            <LanguageSwitcher />
             <div className="flex flex-wrap justify-center gap-6 text-sm">
               <Link
                 href="/privacy"

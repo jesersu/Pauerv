@@ -1,14 +1,16 @@
 "use client";
 
 import { useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
-import { ProjectsSlider } from './projects-slider';
+import { ProjectsSlider } from './ProjectsSlider';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 export function ProjectsSection() {
+  const t = useTranslations('projects');
   const sectionRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
@@ -73,7 +75,7 @@ export function ProjectsSection() {
     <section
       ref={sectionRef}
       id="projects"
-      className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-600 to-red-600 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10"
+      className="scroll-offset min-h-screen bg-gradient-to-br from-purple-600 via-pink-600 to-red-600 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10"
     >
       <div className="max-w-7xl w-full">
         <div className="text-center">
@@ -81,13 +83,13 @@ export function ProjectsSection() {
             ref={titleRef}
             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2 sm:mb-3"
           >
-            Our Projects
+            {t('title')}
           </h2>
           <p
             ref={subtitleRef}
             className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 max-w-2xl mx-auto px-4"
           >
-            Discover our portfolio of innovative solutions
+            {t('subtitle')}
           </p>
         </div>
 
@@ -97,27 +99,27 @@ export function ProjectsSection() {
               {
                 video: '/videos/project1.mp4',
                 poster: '/images/project/project-1-poster.png',
-                title: 'Project 1 - E-commerce Platform',
+                title: t('project1'),
               },
               {
                 video: '/videos/project2.mp4',
                 poster: '/images/project/project-2-poster.jpg',
-                title: 'Project 2 - Mobile App',
+                title: t('project2'),
               },
               {
                 video: '/videos/project3.mp4',
                 poster: '/images/project/project-3-poster.jpg',
-                title: 'Project 3 - Dashboard',
+                title: t('project3'),
               },
               {
                 video: '/videos/project4.mp4',
                 poster: '/images/project/project-4-poster.jpg',
-                title: 'Project 4 - Landing Page',
+                title: t('project4'),
               },
               {
                 video: '/videos/project5.mp4',
                 poster: '/images/project/project-5-poster.jpg',
-                title: 'Project 5 - SaaS Platform',
+                title: t('project5'),
               },
             ]}
             viewportHeightCss="50svh"

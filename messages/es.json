@@ -1,0 +1,123 @@
+{
+  "metadata": {
+    "title": "Pauerv - Desarrollo de Software",
+    "titleTemplate": "%s | Pauerv",
+    "description": "Construimos soluciones de software innovadoras hechas a tu medida. Transforma tus ideas en aplicaciones poderosas con nuestro equipo experto de desarrollo.",
+    "keywords": "desarrollo de software, aplicaciones web, aplicaciones móviles, software personalizado, soluciones tecnológicas, desarrollo de apps",
+    "ogTitle": "Pauerv - Desarrollo de Software",
+    "ogDescription": "Construimos soluciones de software innovadoras hechas a tu medida. Transforma tus ideas en aplicaciones poderosas.",
+    "twitterTitle": "Pauerv - Desarrollo de Software",
+    "twitterDescription": "Construimos soluciones de software innovadoras hechas a tu medida."
+  },
+  "navigation": {
+    "projects": "Proyectos",
+    "services": "Servicios",
+    "contact": "Contáctanos",
+    "language": "Idioma"
+  },
+  "hero": {
+    "title1": "Solución inteligente",
+    "title2": "Resultados sólidos",
+    "subtitle": "Convirtiendo ideas en tecnología de alto rendimiento",
+    "ourProjects": "Nuestros proyectos",
+    "contactUs": "Contáctanos",
+    "finalText1": "CONSTRUIMOS",
+    "finalText2": "PARA",
+    "finalText3": "TI"
+  },
+  "projects": {
+    "title": "Nuestros Proyectos",
+    "subtitle": "Descubre nuestro portafolio de soluciones innovadoras",
+    "project1": "Proyecto 1 - Plataforma de E-commerce",
+    "project2": "Proyecto 2 - Aplicación Móvil",
+    "project3": "Proyecto 3 - Panel de Control",
+    "project4": "Proyecto 4 - Página de Destino",
+    "project5": "Proyecto 5 - Plataforma SaaS"
+  },
+  "services": {
+    "title": "Nuestros Servicios",
+    "subtitle": "Ofrecemos una amplia gama de servicios para ayudarte a dar vida a tus ideas con tecnología de vanguardia y artesanía experta.",
+    "loading": "Cargando servicios..."
+  },
+  "contact": {
+    "title": "Contáctanos",
+    "subtitle": "Ponte en contacto con nuestro equipo",
+    "form": {
+      "name": "Nombre",
+      "namePlaceholder": "Tu nombre",
+      "email": "Correo electrónico",
+      "emailPlaceholder": "tu@email.com",
+      "subject": "Asunto",
+      "subjectPlaceholder": "¿Cómo podemos ayudarte?",
+      "message": "Mensaje",
+      "messagePlaceholder": "Cuéntanos sobre tu proyecto...",
+      "send": "Enviar Mensaje",
+      "sending": "Enviando...",
+      "success": "¡Mensaje enviado exitosamente!",
+      "error": "Error al enviar el mensaje. Por favor, inténtalo de nuevo."
+    }
+  },
+  "about": {
+    "title": "Sobre Nosotros",
+    "subtitle": "Conoce más sobre nuestro equipo y misión"
+  },
+  "footer": {
+    "description": "Transformamos ideas en experiencias digitales excepcionales a través de la innovación, creatividad y tecnología de vanguardia.",
+    "quickLinks": "Enlaces Rápidos",
+    "servicesTitle": "Servicios",
+    "contact": "Contacto",
+    "home": "Inicio",
+    "about": "Acerca de",
+    "projects": "Proyectos",
+    "services": "Servicios",
+    "privacy": "Política de Privacidad",
+    "terms": "Términos de Servicio",
+    "email": "Correo",
+    "phone": "Teléfono",
+    "address": "Dirección",
+    "copyright": "© {year} Pauerv. Todos los derechos reservados."
+  },
+  "dashboard": {
+    "title": "Panel de Control",
+    "users": "Total de Usuarios",
+    "revenue": "Ingresos",
+    "orders": "Pedidos",
+    "interactiveCounter": "Contador Interactivo",
+    "counterDescription": "Este es un ejemplo de Componente Cliente con gestión de estado:"
+  },
+  "sidebar": {
+    "dashboard": "Panel",
+    "settings": "Configuración",
+    "home": "Inicio",
+    "appDashboard": "Panel de la App"
+  },
+  "settings": {
+    "title": "Configuración",
+    "description": "Administra la configuración de tu aplicación"
+  },
+  "error": {
+    "title": "¡Ups! Algo salió mal",
+    "description": "Lo sentimos, pero ocurrió algo inesperado.",
+    "refresh": "Actualizar página",
+    "goHome": "Ir al inicio",
+    "sectionError": "No pudimos cargar la sección {section}.",
+    "tryAgain": "Intenta recargar la página."
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "retry": "Reintentar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "close": "Cerrar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "add": "Agregar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "sort": "Ordenar"
+  }
+}

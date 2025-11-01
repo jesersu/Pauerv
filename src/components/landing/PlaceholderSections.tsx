@@ -1,7 +1,7 @@
-import { ProjectsSection } from './projects-section'
-import { ServicesSection } from './services-section'
-import { AboutSection } from './about-section'
-import { ContactSection } from './contact-section'
+import { ProjectsSection } from './ProjectsSection'
+import { ServicesSection } from './ServicesSection'
+import { AboutSection } from './AboutSection'
+import { ContactSection } from './ContactSection'
 
 export function PlaceholderSections() {
   return (
@@ -10,7 +10,7 @@ export function PlaceholderSections() {
       <ProjectsSection />
 
       {/* Services Section */}
-      <div id="services">
+      <div id="services" className="scroll-offset">
         <ServicesSection />
       </div>
 

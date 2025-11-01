@@ -1,25 +1,37 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { Link } from '@/i18n/routing'
+import { LAYOUT, Z_INDEX } from '@/config/constants'
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher'
 
 export function Navigation() {
+  const t = useTranslations('navigation')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProjectsSection, setIsProjectsSection] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
   const menuItems = [
-    { href: '#projects', label: 'Projects' },
-    { href: '#services', label: 'Services' },
-    { href: '#about', label: 'About us' },
-    { href: '#contact', label: 'Contact us' },
+    { href: '#projects', label: t('projects') },
+    { href: '#services', label: t('services') },
+    { href: '#contact', label: t('contact') },
   ]
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault()
     const element = document.querySelector(href)
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      // Calculate offset for fixed navbar
+      const navbarHeight = LAYOUT.NAVBAR.HEIGHT_DESKTOP
+      const offset = LAYOUT.NAVBAR.SCROLL_OFFSET
+      const elementPosition = element.getBoundingClientRect().top
+      const offsetPosition = elementPosition + window.pageYOffset - navbarHeight - offset
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      })
       setIsMenuOpen(false)
     }
   }
@@ -47,11 +59,12 @@ export function Navigation() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      className={`fixed top-0 left-0 right-0 transition-all duration-500 ${
         isProjectsSection
           ? 'bg-black/80 backdrop-blur-lg border-white/10 shadow-lg'
           : 'bg-transparent border-white/5'
       }`}
+      style={{ zIndex: Z_INDEX.NAVIGATION }}
     >
       <div className="max-w-7xl px-4 sm:px-6 lg:px-10">
         <div className="flex items-center justify-between h-16 md:h-20">
@@ -65,19 +78,22 @@ export function Navigation() {
           </div>
 
           {/* Desktop Menu */}
-          <nav aria-label="Main navigation" className="hidden md:flex md:items-center md:space-x-8">
-            {menuItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={(e) => handleNavClick(e, item.href)}
-                className="text-gray-300 hover:text-white font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black rounded px-2 py-1"
-                aria-label={`Navigate to ${item.label}`}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <div className="hidden md:flex md:items-center md:gap-6">
+            <nav aria-label="Main navigation" className="flex items-center space-x-8">
+              {menuItems.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  onClick={(e) => handleNavClick(e, item.href)}
+                  className="text-gray-300 hover:text-white font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black rounded px-2 py-1"
+                  aria-label={`Navigate to ${item.label}`}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </nav>
+            <LanguageSwitcher />
+          </div>
 
           {/* Mobile Menu Button */}
           <button
@@ -114,7 +130,7 @@ export function Navigation() {
           >
             <div className="flex flex-col space-y-3" role="list">
               {menuItems.map((item) => (
-                <Link
+                <a
                   key={item.href}
                   href={item.href}
                   onClick={(e) => handleNavClick(e, item.href)}
@@ -123,8 +139,11 @@ export function Navigation() {
                   aria-label={`Navigate to ${item.label}`}
                 >
                   {item.label}
-                </Link>
+                </a>
               ))}
+              <div className="px-4 pt-3 border-t border-white/10">
+                <LanguageSwitcher />
+              </div>
             </div>
           </nav>
         )}

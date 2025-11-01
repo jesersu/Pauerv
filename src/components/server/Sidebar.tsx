@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { MobileMenu } from '@/components/ui/mobile-menu'
+import { MobileMenu } from '@/components/ui/MobileMenu'
 
 export function Sidebar() {
   const menuItems = [

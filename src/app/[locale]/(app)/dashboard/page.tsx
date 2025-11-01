@@ -1,4 +1,4 @@
-import { Counter } from '@/components/ui/counter'
+import { Counter } from '@/components/ui/Counter'
 
 export const metadata = {
   title: 'Dashboard - Pauerv',
