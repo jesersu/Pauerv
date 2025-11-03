@@ -36,114 +36,138 @@ export function ContactSection() {
     // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    const formInputs = form.querySelectorAll('input, textarea, button');
+    const contactCards = contactInfo.querySelectorAll('[data-contact-card]');
+
     if (prefersReducedMotion) {
-      gsap.set([title, form, contactInfo], { opacity: 1, y: 0 });
+      gsap.set([title, form, contactInfo, formInputs, contactCards], { opacity: 1, y: 0, x: 0, scale: 1 });
       return;
     }
 
-    // Title animation - Slide in from top
-    gsap.fromTo(
-      title,
-      {
-        y: -100,
-        opacity: 0,
-      },
-      {
-        y: 0,
-        opacity: 1,
-        duration: 1,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: section,
-          start: 'top 80%',
-          toggleActions: 'play none none reverse',
-        },
-      }
-    );
+    // Check if elements are already visible (animation already played)
+    const titleStyle = window.getComputedStyle(title);
+    const alreadyAnimated = parseFloat(titleStyle.opacity) > 0.5;
 
-    // Form animation - Slide in from left
-    gsap.fromTo(
-      form,
-      {
-        x: -100,
-        opacity: 0,
-      },
-      {
-        x: 0,
-        opacity: 1,
-        duration: 1,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: form,
-          start: 'top 80%',
-          toggleActions: 'play none none reverse',
-        },
-      }
-    );
+    // Only set initial states if not already animated
+    if (!alreadyAnimated) {
+      gsap.set(title, { y: -100, opacity: 0 });
+      gsap.set(form, { x: -100, opacity: 0 });
+      gsap.set(contactInfo, { x: 100, opacity: 0 });
+      gsap.set(formInputs, { y: 20, opacity: 0 });
+      gsap.set(contactCards, { scale: 0.8, opacity: 0 });
+    }
 
-    // Contact info animation - Slide in from right
-    gsap.fromTo(
-      contactInfo,
-      {
-        x: 100,
-        opacity: 0,
+    // Title animation - Slide in from top with scale
+    gsap.to(title, {
+      y: 0,
+      opacity: 1,
+      scale: 1,
+      duration: 1.2,
+      ease: 'back.out(1.2)',
+      scrollTrigger: {
+        trigger: section,
+        start: 'top 80%',
+        toggleActions: 'play none none none', // Don't reverse when scrolling back up
+        immediateRender: false,
       },
-      {
-        x: 0,
-        opacity: 1,
-        duration: 1,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: contactInfo,
-          start: 'top 80%',
-          toggleActions: 'play none none reverse',
-        },
-      }
-    );
+    });
 
-    // Animate form inputs with stagger
-    const formInputs = form.querySelectorAll('input, textarea, button');
-    gsap.fromTo(
-      formInputs,
-      {
-        y: 20,
-        opacity: 0,
-      },
-      {
-        y: 0,
-        opacity: 1,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: form,
-          start: 'top 70%',
-          toggleActions: 'play none none reverse',
-        },
-      }
-    );
+    // Set initial scale for title
+    if (!alreadyAnimated) {
+      gsap.set(title, { scale: 0.8 });
+    }
 
-    // Animate contact info cards with stagger
-    const contactCards = contactInfo.querySelectorAll('[data-contact-card]');
-    gsap.fromTo(
-      contactCards,
-      {
-        scale: 0.8,
-        opacity: 0,
+    // Form animation - Slide in from left with rotation
+    gsap.to(form, {
+      x: 0,
+      opacity: 1,
+      rotationY: 0,
+      duration: 1.2,
+      ease: 'power3.out',
+      scrollTrigger: {
+        trigger: form,
+        start: 'top 80%',
+        toggleActions: 'play none none none', // Don't reverse when scrolling back up
+        immediateRender: false,
       },
-      {
-        scale: 1,
-        opacity: 1,
-        duration: 0.6,
-        stagger: 0.15,
-        ease: 'back.out(1.7)',
-        scrollTrigger: {
-          trigger: contactInfo,
-          start: 'top 70%',
-          toggleActions: 'play none none reverse',
-        },
-      }
-    );
+    });
+
+    // Set initial rotation for form
+    if (!alreadyAnimated) {
+      gsap.set(form, { rotationY: -15 });
+    }
+
+    // Contact info animation - Slide in from right with rotation
+    gsap.to(contactInfo, {
+      x: 0,
+      opacity: 1,
+      rotationY: 0,
+      duration: 1.2,
+      ease: 'power3.out',
+      scrollTrigger: {
+        trigger: contactInfo,
+        start: 'top 80%',
+        toggleActions: 'play none none none', // Don't reverse when scrolling back up
+        immediateRender: false,
+      },
+    });
+
+    // Set initial rotation for contact info
+    if (!alreadyAnimated) {
+      gsap.set(contactInfo, { rotationY: 15 });
+    }
+
+    // Animate form inputs with stagger and scale
+    gsap.to(formInputs, {
+      y: 0,
+      opacity: 1,
+      scale: 1,
+      duration: 0.7,
+      stagger: {
+        amount: 0.5,
+        from: 'start',
+      },
+      ease: 'back.out(1.2)',
+      scrollTrigger: {
+        trigger: form,
+        start: 'top 70%',
+        toggleActions: 'play none none none', // Don't reverse when scrolling back up
+        immediateRender: false,
+      },
+    });
+
+    // Set initial scale for form inputs
+    if (!alreadyAnimated) {
+      gsap.set(formInputs, { scale: 0.95 });
+    }
+
+    // Animate contact info cards with stagger, rotation and bounce
+    gsap.to(contactCards, {
+      scale: 1,
+      opacity: 1,
+      rotationX: 0,
+      y: 0,
+      duration: 0.8,
+      stagger: {
+        amount: 0.6,
+        from: 'start',
+      },
+      ease: 'elastic.out(1, 0.6)',
+      scrollTrigger: {
+        trigger: contactInfo,
+        start: 'top 70%',
+        toggleActions: 'play none none none', // Don't reverse when scrolling back up
+        immediateRender: false,
+      },
+    });
+
+    // Set initial rotation for contact cards
+    if (!alreadyAnimated) {
+      gsap.set(contactCards, { rotationX: -20, y: 30 });
+    }
+
+    // Refresh ScrollTrigger to check if already in view
+    ScrollTrigger.refresh();
 
     // Cleanup
     return () => {
@@ -239,7 +263,7 @@ export function ContactSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-7xl mx-auto" style={{ perspective: '1200px' }}>
           {/* Contact Form */}
           <form
             ref={formRef}

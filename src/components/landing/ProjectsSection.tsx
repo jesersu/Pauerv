@@ -34,39 +34,56 @@ export function ProjectsSection() {
       return;
     }
 
+    // Check if elements are already visible (animation already played)
+    const titleStyle = window.getComputedStyle(title);
+    const alreadyAnimated = parseFloat(titleStyle.opacity) > 0.5;
+
+    // Only set initial states if not already animated
+    if (!alreadyAnimated) {
+      gsap.set([title, subtitle, slider], { opacity: 0 });
+      gsap.set(title, { y: -50 });
+      gsap.set(subtitle, { y: 30 });
+      gsap.set(slider, { y: 40, scale: 0.95 });
+    }
+
     // Create timeline for entrance animations
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: section,
         start: 'top 80%',
-        toggleActions: 'play none none reverse',
+        toggleActions: 'play none none none', // Don't reverse when scrolling back up
+        // If already in view, trigger immediately
+        immediateRender: false,
       }
     });
 
     // Animate title from above with fade
-    tl.from(title, {
-      opacity: 0,
-      y: -50,
+    tl.to(title, {
+      opacity: 1,
+      y: 0,
       duration: 0.8,
       ease: 'power2.out',
     })
 
     // Animate subtitle from below with fade
-    .from(subtitle, {
-      opacity: 0,
-      y: 30,
+    .to(subtitle, {
+      opacity: 1,
+      y: 0,
       duration: 0.8,
       ease: 'power2.out',
     }, '-=0.4') // Overlap with title animation
 
     // Animate slider with scale and fade
-    .from(slider, {
-      opacity: 0,
-      scale: 0.95,
-      y: 40,
+    .to(slider, {
+      opacity: 1,
+      scale: 1,
+      y: 0,
       duration: 1,
       ease: 'power3.out',
     }, '-=0.3'); // Overlap with subtitle
+
+    // Check if section is already in view and trigger animation if needed
+    ScrollTrigger.refresh();
 
     // Cleanup: useGSAP automatically reverts animations
   }, { scope: sectionRef });

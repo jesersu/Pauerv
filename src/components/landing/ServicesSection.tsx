@@ -53,49 +53,67 @@ export function ServicesSection() {
       return
     }
 
-    // Animate title
-    gsap.fromTo(
-      title,
-      {
-        y: -50,
-        opacity: 0,
-      },
-      {
-        y: 0,
-        opacity: 1,
-        duration: 1,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: section,
-          start: 'top 80%',
-          toggleActions: 'play none none reverse',
-        },
-      }
-    )
+    // Check if elements are already visible (animation already played)
+    const titleStyle = window.getComputedStyle(title)
+    const alreadyAnimated = parseFloat(titleStyle.opacity) > 0.5
 
-    // Animate service cards with stagger
-    const cards = grid.children
-    gsap.fromTo(
-      cards,
-      {
-        y: 100,
-        opacity: 0,
-        scale: 0.9,
+    // Only set initial states if not already animated
+    if (!alreadyAnimated) {
+      gsap.set(title, { y: -50, opacity: 0 })
+      gsap.set(grid.children, { y: 100, opacity: 0, scale: 0.9 })
+    }
+
+    // Animate title with split text effect
+    gsap.to(title, {
+      y: 0,
+      opacity: 1,
+      scale: 1,
+      duration: 1.2,
+      ease: 'back.out(1.4)',
+      scrollTrigger: {
+        trigger: section,
+        start: 'top 80%',
+        toggleActions: 'play none none none', // Don't reverse when scrolling back up
+        immediateRender: false,
       },
-      {
-        y: 0,
-        opacity: 1,
-        scale: 1,
-        duration: 0.8,
-        stagger: 0.2,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: grid,
-          start: 'top 85%',
-          toggleActions: 'play none none reverse',
-        },
-      }
-    )
+    })
+
+    // Set initial scale for title
+    if (!alreadyAnimated) {
+      gsap.set(title, { scale: 0.85 })
+    }
+
+    // Animate service cards with enhanced stagger and 3D rotation
+    const cards = grid.children
+    gsap.to(cards, {
+      y: 0,
+      opacity: 1,
+      scale: 1,
+      rotationY: 0,
+      rotationX: 0,
+      duration: 1,
+      stagger: {
+        amount: 0.8,
+        from: 'start',
+        grid: 'auto',
+        ease: 'power2.inOut',
+      },
+      ease: 'back.out(1.4)',
+      scrollTrigger: {
+        trigger: grid,
+        start: 'top 85%',
+        toggleActions: 'play none none none', // Don't reverse when scrolling back up
+        immediateRender: false,
+      },
+    })
+
+    // Set initial rotation for cards
+    if (!alreadyAnimated) {
+      gsap.set(cards, { rotationY: -15, rotationX: 10 })
+    }
+
+    // Refresh ScrollTrigger to check if already in view
+    ScrollTrigger.refresh()
 
     // Cleanup
     return () => {
@@ -134,7 +152,7 @@ export function ServicesSection() {
         </div>
 
         {/* Services Grid */}
-        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8" style={{ perspective: '1000px' }}>
           {services.map((service) => (
             <ServiceCard key={service.id} service={service} />
           ))}

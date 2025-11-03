@@ -51,10 +51,15 @@ export function ScrollHero() {
 
   // useGSAP provides automatic cleanup and better React integration
   useGSAP(() => {
-    // Skip GSAP animations on mobile
-    if (isMobile) return
     // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    // Skip GSAP animations on mobile (but don't return early - let cleanup happen)
+    if (isMobile) {
+      // Clean up any existing ScrollTriggers when switching to mobile
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill())
+      return
+    }
 
     const section = sectionRef.current
     const pinWrapper = pinWrapperRef.current
@@ -171,6 +176,7 @@ export function ScrollHero() {
           scrub: 1,                      // Smooth scrubbing (animations follow scroll position)
           anticipatePin: 1,              // Helps prevent jumps when pinning starts
           invalidateOnRefresh: true,     // Recalculate on resize
+          immediateRender: false,
         }
       })
       // Phase 1: Background color transition (beginning of scroll)
@@ -223,17 +229,14 @@ export function ScrollHero() {
         duration: 0.8,
         ease: 'none'
       }, 1)
-
-      // Phase 4: Fade out final text and images at the end of scroll (prevents visibility issues)
-      .to([text2Row1, text2Row2, text2Row3, imageTop, imageBottom], {
-        opacity: 0,
-        duration: 0.5,
-        ease: 'none'
-      }, 2.5)  // Start fading out near the end
     }
 
     // Create initial animation
     createScrollAnimation()
+
+    // Force ScrollTrigger to update immediately based on current scroll position
+    // This ensures animations match the scroll position when switching from mobile to desktop
+    ScrollTrigger.refresh()
 
     // Debounced resize handler for better performance
     let resizeTimer: NodeJS.Timeout
