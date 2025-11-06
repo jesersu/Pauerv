@@ -114,30 +114,20 @@ export function ProjectsSection() {
           <ProjectsSlider
             media={[
               {
-                video: '/videos/portafolio-colcastar.mov',
+                video: '/videos/portafolio-colcastar.mp4',
                 poster: '/images/project/project-1-poster.jpeg',
                 title: t('project1'),
               },
               {
-                video: '/videos/portafolio-ivantours.mov',
+                video: '/videos/portafolio-ivantours.mp4',
                 poster: '/images/project/project-2-poster.jpeg',
                 title: t('project2'),
               },
               {
-                video: '/videos/portafolio-invita.mov',
+                video: '/videos/portafolio-invita.mp4',
                 poster: '/images/project/project-3-poster.jpeg',
                 title: t('project3'),
               },
-              // {
-              //   video: '/videos/project4.mp4',
-              //   poster: '/images/project/project-4-poster.jpg',
-              //   title: t('project4'),
-              // },
-              // {
-              //   video: '/videos/project5.mp4',
-              //   poster: '/images/project/project-5-poster.jpg',
-              //   title: t('project5'),
-              // },
             ]}
             viewportHeightCss="50svh"
             cardHeightRatio={0.72}
