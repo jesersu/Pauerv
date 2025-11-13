@@ -117,16 +117,19 @@ export function ProjectsSection() {
                 video: '/videos/portafolio-colcastar.mp4',
                 poster: '/images/project/project-1-poster.jpeg',
                 title: t('project1'),
+                demoUrl: 'https://colcastar.netlify.app/',
               },
               {
                 video: '/videos/portafolio-ivantours.mp4',
                 poster: '/images/project/project-2-poster.jpeg',
                 title: t('project2'),
+                demoUrl: 'https://invitaciones-pro.vercel.app/',
               },
               {
                 video: '/videos/portafolio-invita.mp4',
                 poster: '/images/project/project-3-poster.jpeg',
                 title: t('project3'),
+                demoUrl: 'https://ivanperutours.com/',
               },
             ]}
             viewportHeightCss="50svh"

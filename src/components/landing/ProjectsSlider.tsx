@@ -1,5 +1,29 @@
 "use client";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ANIMATION } from '@/config/constants';
+import styles from './ProjectsSlider.module.css';
+import {
+  BUTTON_SIZE,
+  DEFAULT_CLAMP,
+  createContainerStyles,
+  createViewportStyles,
+  createStageStyles,
+  createCardCommonStyles,
+  createMediaStyles,
+  createArrowBaseStyles,
+  createLeftArrowStyles,
+  createRightArrowStyles,
+  createVisitSiteButtonStyles,
+  createTransition,
+  calculateHeightVar,
+} from './projectsSliderStyles';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(useGSAP);
+}
 
 // ProjectsSlider component
 // - Shows 3 cards: left, center (emphasized), right
@@ -16,6 +40,7 @@ export type ProjectMedia = {
   video: string;   // Path to video file
   poster: string;  // Path to poster/thumbnail image
   title?: string;  // Optional title for accessibility
+  demoUrl?: string; // Optional demo URL for the project
 };
 
 export type ProjectsSliderProps = {
@@ -55,14 +80,6 @@ function mod(n: number, m: number) {
   return ((n % m) + m) % m;
 }
 
-// Responsive button size calculation
-const getButtonSize = () => {
-  if (typeof window === 'undefined') return 40;
-  return window.innerWidth < 640 ? 36 : 40;
-};
-
-const BUTTON_SIZE = 40;
-
 export const ProjectsSlider: React.FC<ProjectsSliderProps> = ({
   images = [],
   media = [],
@@ -81,10 +98,12 @@ export const ProjectsSlider: React.FC<ProjectsSliderProps> = ({
   playOnHover = false,
   playOnlyCenter = true,
 }) => {
+  const t = useTranslations('projects');
+
   // Convert legacy images array to media format for backward compatibility
   const normalizedMedia = useMemo(() => {
     if (media.length > 0) return media;
-    return images.map((img) => ({ video: img, poster: '', title: '' }));
+    return images.map((img) => ({ video: img, poster: '', title: '', demoUrl: undefined }));
   }, [media, images]);
 
   const n = normalizedMedia.length;
@@ -95,6 +114,29 @@ export const ProjectsSlider: React.FC<ProjectsSliderProps> = ({
   const isAnimatingRef = useRef(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
+
+  // GSAP animations for button entrance
+  useGSAP(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    // Animate all visit site buttons with entrance effect
+    const buttons = containerRef.current?.querySelectorAll('.visit-site-button');
+    if (buttons && buttons.length > 0) {
+      gsap.fromTo(
+        buttons,
+        { opacity: 0, scale: 0.9, y: 10 },
+        {
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          duration: ANIMATION.DURATION.FAST,
+          ease: ANIMATION.EASING.BOUNCE,
+          stagger: ANIMATION.STAGGER.TIGHT,
+        }
+      );
+    }
+  }, { scope: containerRef });
 
   // Ensure there are at least 2 videos to render the layout nicely
   const canSlide = n >= 2; // allow slide even with 2 videos (mirrors nicely)
@@ -189,97 +231,22 @@ export const ProjectsSlider: React.FC<ProjectsSliderProps> = ({
   // We place five cards to guarantee continuity during animation
   const basePositions = [-200, -100, 0, 100, 200];
 
-  // Styles
-  const TRANSITION = `transform ${durationMs}ms ease`;
-
   // Derive a target card height from the viewport height if provided (no hooks needed)
   const derivedCardHeight = viewportHeight ? Math.round(viewportHeight * cardHeightRatio) : undefined;
   // If CSS height provided, compute height via CSS calc
   const derivedCardHeightCss = viewportHeightCss ? `calc(var(--ps-height) * ${cardHeightRatio})` : undefined;
 
-  const containerStyles: React.CSSProperties = {
-    position: 'relative',
-    width: '100%',
-    // Height can be adapted; we use a responsive height via aspect-ish ratio
-    // We'll set a min-height for small screens
-    minHeight: 320,
-    outline: 'none',
-  };
-
-  const defaultClamp = 'clamp(260px, 50vw, 640px)';
-  const heightVar = viewportHeightCss || (viewportHeight ? `${viewportHeight}px` : (heightClamp || defaultClamp));
-
-  const viewportStyles: React.CSSProperties = {
-    position: 'relative',
-    overflow: 'hidden',
-    width: '100%',
-    height: 'var(--ps-height)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '8px 0',
-    ['--ps-height' as any]: heightVar,
-  };
-
-  // A wrapper that we slide in one go by changing `shift`
-  const stageStyles: React.CSSProperties = {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-  };
-
-  const cardCommon: React.CSSProperties = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)', // will be overridden per-card with translateX
-    // Prefer height-driven sizing when viewportHeight is provided; otherwise responsive width
-    height: derivedCardHeight ?? derivedCardHeightCss ?? undefined,
-    width: (derivedCardHeight || derivedCardHeightCss) ? 'auto' : 'clamp(240px, 80vw, 56rem)',
-    maxWidth: '95%',
-    aspectRatio: '4 / 3',
-    borderRadius: 16,
-    overflow: 'hidden',
-    background: '#111',
-    boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
-  } as React.CSSProperties;
-
-  const mediaStyles: React.CSSProperties = {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    display: 'block',
-    userSelect: 'none',
-    pointerEvents: 'none',
-  };
-
-  const arrowBase: React.CSSProperties = {
-    position: 'absolute',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    width: BUTTON_SIZE,
-    height: BUTTON_SIZE,
-    borderRadius: '9999px',
-    border: '1px solid rgba(255,255,255,0.25)',
-    background: 'rgba(0,0,0,0.35)',
-    color: 'white',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    zIndex: 20,
-    backdropFilter: 'blur(2px)',
-    WebkitBackdropFilter: 'blur(2px)',
-  } as React.CSSProperties;
-
-  const leftArrowStyles: React.CSSProperties = {
-    ...arrowBase,
-    left: '4px',
-  };
-  const rightArrowStyles: React.CSSProperties = {
-    ...arrowBase,
-    right: '4px',
-  };
+  // Generate styles using style creator functions
+  const containerStyles = createContainerStyles();
+  const heightVar = calculateHeightVar(viewportHeightCss, viewportHeight, heightClamp);
+  const viewportStyles = createViewportStyles(heightVar);
+  const stageStyles = createStageStyles();
+  const cardCommon = createCardCommonStyles(derivedCardHeight, derivedCardHeightCss);
+  const mediaStyles = createMediaStyles();
+  const leftArrowStyles = createLeftArrowStyles();
+  const rightArrowStyles = createRightArrowStyles();
+  const visitSiteButtonStyles = createVisitSiteButtonStyles();
+  const TRANSITION = createTransition(durationMs);
 
   const renderCard = (slotIndex: number, mediaIndex: number) => {
     const base = basePositions[slotIndex]; // -200, -100, 0, 100, 200
@@ -315,7 +282,10 @@ export const ProjectsSlider: React.FC<ProjectsSliderProps> = ({
     };
 
     const mediaItem = normalizedMedia[mediaIndex];
-    const { video, poster, title } = mediaItem;
+    const { video, poster, title, demoUrl } = mediaItem;
+
+    // Check if demo URL is valid (not empty, not placeholder '#')
+    const hasValidDemoUrl = demoUrl && demoUrl !== '#';
 
     // Click handler for side cards
     const handleCardClick = () => {
@@ -325,6 +295,14 @@ export const ProjectsSlider: React.FC<ProjectsSliderProps> = ({
       } else if (isRightCard) {
         goRight();
       }
+    };
+
+    // Handle demo button click (stop propagation to prevent triggering slider)
+    const handleDemoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+      if (!hasValidDemoUrl) {
+        e.preventDefault();
+      }
+      e.stopPropagation();
     };
 
     // Keyboard handler for accessibility
@@ -358,7 +336,7 @@ export const ProjectsSlider: React.FC<ProjectsSliderProps> = ({
         onKeyDown={handleKeyDown}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        data-ps-card
+        className={`${styles.card} ${isClickable ? styles.cardClickable : ''}`}
         aria-label={isClickable ? (isLeftCard ? 'View previous project' : 'View next project') : title || `Project ${mediaIndex + 1}`}
         role={isClickable ? 'button' : undefined}
         tabIndex={isClickable ? 0 : undefined}
@@ -374,6 +352,7 @@ export const ProjectsSlider: React.FC<ProjectsSliderProps> = ({
           src={video}
           poster={poster || undefined}
           style={mediaStyles}
+          className={styles.cardVideo}
           loop
           muted
           playsInline
@@ -383,6 +362,33 @@ export const ProjectsSlider: React.FC<ProjectsSliderProps> = ({
           draggable={false}
           aria-label={title || `Project ${mediaIndex + 1} video`}
         />
+
+        {/* Visit Site Button */}
+        {hasValidDemoUrl && (
+          <a
+            href={demoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={handleDemoClick}
+            style={visitSiteButtonStyles}
+            className={styles.visitSiteButton}
+            aria-label={`${title || `Project ${mediaIndex + 1}`} - Visit Site`}
+          >
+            {t('visitSite')}
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </a>
+        )}
       </div>
     );
   };
@@ -396,92 +402,19 @@ export const ProjectsSlider: React.FC<ProjectsSliderProps> = ({
       aria-roledescription="carousel"
       aria-label="Projects slider"
     >
-      {/* Inline helper styles for responsiveness of container height */}
-      <style>{`
-        /* Default responsive height if CSS var is not set by inline style */
-        [data-ps-viewport] { height: var(--ps-height, ${defaultClamp}); }
-
-        /* Responsive arrow button sizing */
-        @media (max-width: 639px) {
-          [data-ps-arrow] {
-            width: 36px;
-            height: 36px;
-          }
-          [data-ps-arrow] svg {
-            width: 18px;
-            height: 18px;
-          }
-        }
-
-        /* Hover emphasis on arrows */
-        @media (hover: hover) {
-          [data-ps-arrow]:hover { background: rgba(0,0,0,0.5); }
-        }
-        [data-ps-arrow]:active { transform: translateY(-50%) scale(0.96); }
-
-        /* Smooth hover effect on project cards */
-        [data-ps-card] {
-          transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-                      box-shadow 0.4s ease,
-                      filter 0.4s ease;
-          position: relative;
-        }
-
-        @media (hover: hover) {
-          [data-ps-card]:hover {
-            transform: translate(calc(-50% + var(--card-x, 0)), calc(-50% - 8px)) scale(var(--card-scale, 1)) !important;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 0 2px rgba(255,255,255,0.1);
-            filter: brightness(1.1);
-            z-index: 10;
-          }
-        }
-
-        /* Video zoom effect on hover */
-        [data-ps-card] video {
-          transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        @media (hover: hover) {
-          [data-ps-card]:hover video {
-            transform: scale(1.08);
-          }
-        }
-
-        /* Clickable cards get extra hover indication */
-        [data-ps-card][role="button"] {
-          transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-                      box-shadow 0.3s ease,
-                      filter 0.3s ease,
-                      opacity 0.3s ease;
-        }
-
-        @media (hover: hover) {
-          [data-ps-card][role="button"]:hover {
-            opacity: 0.95;
-            transform: translate(calc(-50% + var(--card-x, 0)), calc(-50% - 12px)) scale(calc(var(--card-scale, 1) * 1.02)) !important;
-          }
-        }
-
-        /* Focus state for accessibility */
-        [data-ps-card][role="button"]:focus {
-          outline: 2px solid rgba(255,255,255,0.5);
-          outline-offset: 4px;
-        }
-      `}</style>
-
       <button
         type="button"
         aria-label="Previous"
         onClick={goLeft}
         style={leftArrowStyles}
-        data-ps-arrow
+        className={styles.arrow}
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
 
-      <div style={viewportStyles} data-ps-viewport>
+      <div style={viewportStyles} className={styles.viewport}>
         <div style={stageStyles}>
           {/* Render five positions for seamless slide */}
           {renderCard(0, indices[0])}
@@ -497,7 +430,7 @@ export const ProjectsSlider: React.FC<ProjectsSliderProps> = ({
         aria-label="Next"
         onClick={goRight}
         style={rightArrowStyles}
-        data-ps-arrow
+        className={styles.arrow}
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

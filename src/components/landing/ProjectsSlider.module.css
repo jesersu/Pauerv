@@ -1,0 +1,151 @@
+/**
+ * ProjectsSlider Component Styles
+ *
+ * All CSS rules for the ProjectsSlider component organized by feature.
+ * Uses CSS Modules for scoped styling.
+ */
+
+/* ============================================================================
+   VIEWPORT & CONTAINER
+   ============================================================================ */
+
+.viewport {
+  /* Height is set via --ps-height CSS variable from inline styles */
+  /* Fallback clamp provided in inline style attribute */
+}
+
+/* ============================================================================
+   ARROW BUTTONS
+   ============================================================================ */
+
+.arrow {
+  position: relative;
+}
+
+/* Responsive arrow button sizing */
+@media (max-width: 639px) {
+  .arrow {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .arrow svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Hover emphasis on arrows */
+@media (hover: hover) {
+  .arrow:hover {
+    background: rgba(0, 0, 0, 0.5);
+  }
+}
+
+.arrow:active {
+  transform: translateY(-50%) scale(0.96);
+}
+
+/* ============================================================================
+   PROJECT CARDS
+   ============================================================================ */
+
+.card {
+  transition:
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.4s ease,
+    filter 0.4s ease;
+  position: relative;
+}
+
+/* Smooth hover effect on project cards */
+@media (hover: hover) {
+  .card:hover {
+    transform: translate(calc(-50% + var(--card-x, 0)), calc(-50% - 8px)) scale(var(--card-scale, 1)) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(255, 255, 255, 0.1);
+    filter: brightness(1.1);
+    z-index: 10;
+  }
+}
+
+/* Video zoom effect on hover */
+.cardVideo {
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (hover: hover) {
+  .card:hover .cardVideo {
+    transform: scale(1.08);
+  }
+}
+
+/* Clickable cards get extra hover indication */
+.cardClickable {
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.3s ease,
+    filter 0.3s ease,
+    opacity 0.3s ease;
+}
+
+@media (hover: hover) {
+  .cardClickable:hover {
+    opacity: 0.95;
+    transform: translate(calc(-50% + var(--card-x, 0)), calc(-50% - 12px)) scale(calc(var(--card-scale, 1) * 1.02)) !important;
+  }
+}
+
+/* Focus state for accessibility */
+.cardClickable:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 4px;
+}
+
+/* ============================================================================
+   VISIT SITE BUTTON
+   ============================================================================ */
+
+.visitSiteButton {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+/* Hover state with gradient animation and enhanced 3D effect */
+@media (hover: hover) {
+  .visitSiteButton:hover {
+    background-position: 100% 50% !important;
+    transform:
+      translateY(-6px)
+      rotateX(8deg)
+      rotateY(-5deg)
+      rotateZ(-1deg)
+      scale(1.02) !important;
+    box-shadow:
+      0 4px 8px rgba(0, 0, 0, 0.15),
+      0 16px 32px rgba(0, 0, 0, 0.35),
+      0 0 30px rgba(212, 117, 117, 0.4),
+      inset 1px 1px 2px rgba(255, 255, 255, 0.3),
+      inset -1px -1px 2px rgba(0, 0, 0, 0.4) !important;
+  }
+}
+
+/* Active state with press feedback and depth */
+.visitSiteButton:active {
+  transform:
+    translateY(-2px)
+    rotateX(3deg)
+    rotateY(-2deg)
+    rotateZ(0deg)
+    scale(0.98) !important;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 6px 12px rgba(0, 0, 0, 0.25),
+    inset 2px 2px 4px rgba(0, 0, 0, 0.3),
+    inset -1px -1px 2px rgba(255, 255, 255, 0.1) !important;
+  background-position: 50% 50% !important;
+}
+
+/* Focus state for accessibility */
+.visitSiteButton:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
+}
